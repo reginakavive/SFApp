@@ -1,0 +1,73 @@
+/* Header styles */
+h1 {
+    font-size: 36px;
+    color: #333; /* Dark gray */
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Sidebar styles */
+st.sidebar {
+    background-color: #556b2f; /* Olive Green */
+    padding: 20px;
+}
+
+.sidebar img {
+    width: 100px;
+    display: block;
+    margin: 0 auto;
+    margin-bottom: 20px;
+}
+
+.sidebar .sidebar-content {
+    margin-bottom: 20px;
+}
+
+.sidebar .sidebar-content h2 {
+    font-size: 24px;
+    color: #333; /* Dark gray */
+    margin-bottom: 10px;
+}
+
+/* Main content styles */
+.content {
+    padding: 20px;
+}
+
+/* Map container styles */
+#map-container {
+    height: 600px;
+    margin-bottom: 20px;
+}
+
+/* Boxplot container styles */
+.boxplot-container {
+    margin-bottom: 20px;
+}
+
+/* Boxplot styles */
+.boxplot {
+    width: 100%;
+    border: 1px solid #ccc; /* Light gray border */
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.boxplot h3 {
+    font-size: 20px;
+    color: #8b0000; /* Burnt Orange */
+    margin-bottom: 10px;
+}
+
+.boxplot img {
+    width: 100%;
+}
+
+/* Footer styles */
+.footer {
+    text-align: center;
+    font-size: 14px;
+    color: #006400; /* Dark Green */
+    margin-top: 20px;
+}
