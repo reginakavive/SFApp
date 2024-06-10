@@ -2,16 +2,16 @@
 # Packages Required
 
 1. earth engine
-conda install -y -c conda-forge earthengine-api
+   - conda install -y -c conda-forge earthengine-api
 
-2. geemap
-conda create -n gee python
-conda activate gee
-conda install mamba -c conda-forge
-mamba install geemap -c conda-forge
+3. geemap
+   - conda create -n gee python
+   - conda activate gee
+   - conda install mamba -c conda-forge
+   - mamba install geemap -c conda-forge
 
-3. Google Cloud CLI installation
-   https://cloud.google.com/sdk/docs/install#linux
+4. Google Cloud CLI installation
+   -   https://cloud.google.com/sdk/docs/install#linux
    
 5. streamlit
 6. geojson
