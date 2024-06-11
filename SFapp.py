@@ -9,6 +9,9 @@ import datetime
 import urllib.request
 from shapely.geometry import mapping
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from PIL import Image
 import math
 import io
 from eefun import *
@@ -134,14 +137,14 @@ with tab1:
             stack = stackk(bb,selected_Sdate,selected_Edate,sdate,edate,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
             training = get_training(bb,vectors,selected_variables,prcSum,  prcNrd, Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
             x = get_x(training,selected_variables)
-            #generate cluster output
-            res = get_res_xmeans(training,selected_variables,x)
+            # #generate cluster output
+            # res = get_res_xmeans(training,selected_variables,x)
     
-            #clip final ouput to aoi shape... otherwise expensive comp
-            bb_clip = mapping(poly.geometry.unary_union)
-            res = res.clip(bb_clip)        
+            # #clip final ouput to aoi shape... otherwise expensive comp
+            # bb_clip = mapping(poly.geometry.unary_union)
+            # res = res.clip(bb_clip)        
     
-            Map.addLayer (res.randomVisualizer(), {}, 'Xmeans')
+            # Map.addLayer (res.randomVisualizer(), {}, 'Xmeans')
 
         except Exception as e:
             st.error("An error occurred: Try again. Ensure the AOI geometry is a polygon or rectangle. Very large or very small regions might not be processed either")
@@ -154,7 +157,16 @@ with tab1:
                 #display default variables 
                 v = str(selected_variables)
                 var_clean_list = ", ".join(selected_variables)
-                st.sidebar.write("Variables: ", var_clean_list)            
+                st.sidebar.write("Variables: ", var_clean_list)  
+
+            #generate cluster output
+            res = get_res_xmeans(training,selected_variables,x)
+    
+            #clip final ouput to aoi shape... otherwise expensive comp
+            bb_clip = mapping(poly.geometry.unary_union)
+            res = res.clip(bb_clip)        
+    
+            Map.addLayer (res.randomVisualizer(), {}, 'Xmeans')
     
             cluster_modification_options = st.sidebar.checkbox("Modify Clusters", key="cluster_modification")        
             if not cluster_modification_options:
@@ -244,45 +256,68 @@ with tab1:
                 #data = dta.sample(scale=scale_value, factor=0.4, region=bb_clip)
                 data = dta.sample(numPixels=5000, region=bb_clip)
                 values = data.aggregate_array(dta.bandNames().getInfo()[0]).getInfo()  # Aggregate values
-                
-                # Plot boxplot
-                fig, ax = plt.subplots(figsize=(8, 6))
-                ax.boxplot(values)
-                ax.set_title(var_name)  # Add title with variable name
+                #fig = go.Figure(data=[go.Box(y=values)])
+                return values
+                # # Plot boxplot
+                # fig, ax = plt.subplots(figsize=(8, 6))
+                # ax.boxplot(values)
+                # ax.set_title(var_name)  # Add title with variable name
                                     
-                # Convert plot to bytes
-                buf = io.BytesIO()
-                plt.savefig(buf, format='png')
-                plt.close(fig)
-                buf.seek(0)
-                return buf.getvalue()
+                # # Convert plot to bytes
+                # buf = io.BytesIO()
+                # plt.savefig(buf, format='png')
+                # plt.close(fig)
+                # buf.seek(0)
+                # return buf.getvalue()
             else:
                 return None
         # Calculate number of rows and columns for subplot layout
         num_variables = len(selected_variables)
         num_cols = 3  # Number of columns
         num_rows = math.ceil(num_variables / num_cols)  # Number of rows
-        
-        fig, axes = plt.subplots(num_rows, num_cols, figsize=(15, 5*num_rows))
 
-        for i, ax in enumerate(axes.flat):
+        fig = make_subplots(rows=int(num_variables/3)+1, cols=3)
+
+        for i, var_name in enumerate(selected_variables):
             if i < num_variables:
                 var_name = selected_variables[i]
                 plot_bytes = generate_boxplot(var_name)
                 if plot_bytes:
-                    img = plt.imread(io.BytesIO(plot_bytes))
-                    img = plt.imread(io.BytesIO(plot_bytes))
-                    ax.imshow(img)
-                    ax.set_title(var_name)
-                    ax.axis('off')  # Turn off axis
-                    ax.set_xticks([])  # Remove ticks on x-axis
-                    ax.set_yticks([])  # Remove ticks on y-axis
-            else:
-                ax.axis('off')  # Turn off empty subplots
+                    fig.add_trace(go.Box(y=plot_bytes, name=f"{var_name}", boxmean='sd'),
+                          row=int(i/3)+1, col=i%3+1)
+                    #fig.update_xaxes(title_text=var_name, row=int(i/3)+1, col=i%3+1)
+                    fig.update_yaxes(title_text="Values", row=int(i/3)+1, col=i%3+1)
+
+        # Update layout
+        fig.update_layout(height=1500, width=1000, title_text="Boxplots of Selected Variables",showlegend=False)
+        
+        # Display the plot
+        st.plotly_chart(fig, use_container_width=True)
+                    
+                    # #fig = go.Figure(data=[go.Box(y=plot_bytes)])
+                    # img =plot_bytes
+                    # #fig.add_trace(go.Box(y=plot_bytes, name=f"{var_name}", boxmean='sd'))
+                    # img.update_layout(title=f"Boxplot of {var_name}", xaxis_title=var_name, yaxis_title="Values")
+                    # st.plotly_chart(fig,use_container_width=True)
+
+                    
+            #         img = plt.imread(io.BytesIO(plot_bytes))
+            #         img = plt.imread(io.BytesIO(plot_bytes))
+            #         ax.imshow(img)
+            #         ax.set_title(var_name)
+            #         ax.axis('off')  # Turn off axis
+            #         ax.set_xticks([])  # Remove ticks on x-axis
+            #         ax.set_yticks([])  # Remove ticks on y-axis
+            # else:
+            #     ax.axis('off')  # Turn off empty subplots
 
 
-        plt.tight_layout()
-        st.pyplot(fig)
+        # plt.tight_layout()
+        # # st.pyplot(fig)
+        # st.plotly_chart(fig)
+        
+        
+        # st.plotly_chart(fig)
 
         # except Exception as e:
         #     st.error("An error occurred: There is an issue with boxplots.")      
