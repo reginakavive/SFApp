@@ -84,7 +84,7 @@
                     varieties in rainfed wheat, and therefore rainfall might be the most important environmental variable to define the
                     different environmental clusters.</p>
                 <p  style="color: #333;">The user should remove the variables from the box and only leave those that are relevant for the validation.</p>
-                <div> <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWpqYTh3bjVieDRsemdiNXJtbzQxaDM3ZmRyM2VicWxmcHZ0ZzhnNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Uf1Gt7JZvrNtEzl1od/giphy.gif" alt="">  </div>
+                <div> <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjEx…9naWZfYnlfaWQmY3Q9Zw/Uf1Gt7JZvrNtEzl1od/giphy.gif" alt="">  </div>
                 <p  style="color: #333;">The user can test several combinations of variables and number of clusters and see the effects in the clusters 
                     and variable distributions until an acceptable result is obtained. Once satisfied, the user can export the user-defined clusters by 
                     clicking the “Get Results” button to download to the computer.</p>
