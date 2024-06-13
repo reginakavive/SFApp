@@ -34,7 +34,7 @@
                 <p style="color: #333;">The user will need to provide the file in .shp or .geojson formats to
                     set the AOI where the trials will be conducted. This will define the tool for which to process the different environmental units in
                     the AOI.</p>
-                <div > <img src="assets/upload_aoi.GIF"  alt="">  </div>
+                <div > <img src="/assets/upload_aoi.GIF"  alt="">  </div>
                 <p style="color: #333;">Alternatively, the user could manually draw a shape on the map that
                     defines the region of interest.</p>
                 <div> </div>
