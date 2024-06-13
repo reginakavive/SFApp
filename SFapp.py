@@ -183,33 +183,55 @@ with tab1:
         try:
             st.sidebar.write("## Download: ")
             st.sidebar.markdown("Are you satisfied with the results? If yes, Click 'Get Results' to download the results for use." )
-            downloaderr_input = st.sidebar.button('Get Results')
+            outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
             
-            if downloaderr_input: 
-                outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
-               
-                task = ee.batch.Export.table.toCloudStorage(
-                    collection=outDiss,
-                    description='Export KML to GCS',
-                    bucket='eia2030',  # specify the name of your GCS bucket
-                    fileNamePrefix=f'Data_{selected_Crop}_{aoiname}',
-                    fileFormat='KML'
-                )                
-                # Start the export task
-                task.start()
+            task = ee.batch.Export.table.toCloudStorage(
+                collection=outDiss,
+                description='Export KML to GCS',
+                bucket='eia2030',  # specify the name of your GCS bucket
+                fileNamePrefix=f'Data_{selected_Crop}_{aoiname}',
+                fileFormat='KML'
+            )                
+            # Start the export task
+            task.start()
+            while task.active():
+                pass  
+            # Get the export task status
+            status = task.status()['state'] 
+            # Get the download URL
+            download_url = task.status()['destination_uris'][0]
+            # Download the file to local machine
+            # urllib.request.urlretrieve(download_url, f'Data_{selected_Crop}_{aoiname}.kml')
+            
+            st.sidebar.download_button('Get Results',download_url, file_name=f'Data_{selected_Crop}.kml')
                 
-                while task.active():
-                    pass       
+            # downloaderr_input = st.sidebar.button('Get Results')
+            
+            # if downloaderr_input: 
+            #     outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
+               
+            #     task = ee.batch.Export.table.toCloudStorage(
+            #         collection=outDiss,
+            #         description='Export KML to GCS',
+            #         bucket='eia2030',  # specify the name of your GCS bucket
+            #         fileNamePrefix=f'Data_{selected_Crop}_{aoiname}',
+            #         fileFormat='KML'
+            #     )                
+            #     # Start the export task
+            #     task.start()
+                
+            #     while task.active():
+            #         pass       
                     
-                # Get the export task status
-                status = task.status()['state']                
-                if status == 'COMPLETED':
-                    # Get the download URL
-                    download_url = task.status()['destination_uris'][0]
-                    # Download the file to local machine
-                    urllib.request.urlretrieve(download_url, f'Data_{selected_Crop}_{aoiname}.kml')                
-                else:
-                    print("Export task failed or hasn't completed yet.")
+            #     # Get the export task status
+            #     status = task.status()['state']                
+            #     if status == 'COMPLETED':
+            #         # Get the download URL
+            #         download_url = task.status()['destination_uris'][0]
+            #         # Download the file to local machine
+            #         urllib.request.urlretrieve(download_url, f'Data_{selected_Crop}_{aoiname}.kml')                
+            #     else:
+            #         print("Export task failed or hasn't completed yet.")
         except Exception as e:
             st.error("An error occurred: There is an issue with your file download. Try again")   
 
