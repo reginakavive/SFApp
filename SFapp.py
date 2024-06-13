@@ -16,16 +16,18 @@ import math
 import io
 from eefun import *
 
-# # # Need to refresh token every week
-ee.Authenticate()
-ee.Initialize(project='midyear-button-379815')
+# # # # Need to refresh token every week
+# ee.Authenticate()
+# ee.Initialize(project='midyear-button-379815')
 
 
 logo = "EiA_logo.png"
-
+logo2 = "EiA_logo2.png"
 # Wide app layout
-st.set_page_config(layout="wide", page_title="Sampling Framework", page_icon=logo)
-st.header("Sampling Framework")
+st.set_page_config(layout="wide", page_title="Sampling Framework", page_icon=logo2)
+st.header(":green[Sampling Framework]")
+#st.markdown('<h1 style="color: rgb(85,176,71);">Sampling Framework</h1>', unsafe_allow_html=True)
+        
 
 crops = ["Maize", "Potato", "Cassava","Rice", "Wheat", "Soybean", "Teff", "Sorghum" ]
 varlist = ['Rainfall Total', 'Rainfall Days','Rainfall Average','Temperature Maximum',
@@ -65,7 +67,7 @@ with st.sidebar:
         selected_Sdate = st.sidebar.date_input("Start",(datetime.date.today() - datetime.timedelta(days=10*365)))
         selected_Edate = st.sidebar.date_input("End")
                
-tab1, tab2 = st.tabs(["The App", "How It Works"])
+tab1, tab2 = st.tabs([":orange[The App]", ":orange[How It Works]"])
 
 with tab2:
     #st.write("How It Works") 
@@ -137,14 +139,7 @@ with tab1:
             stack = stackk(bb,selected_Sdate,selected_Edate,sdate,edate,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
             training = get_training(bb,vectors,selected_variables,prcSum,  prcNrd, Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
             x = get_x(training,selected_variables)
-            # #generate cluster output
-            # res = get_res_xmeans(training,selected_variables,x)
-    
-            # #clip final ouput to aoi shape... otherwise expensive comp
-            # bb_clip = mapping(poly.geometry.unary_union)
-            # res = res.clip(bb_clip)        
-    
-            # Map.addLayer (res.randomVisualizer(), {}, 'Xmeans')
+            
 
         except Exception as e:
             st.error("An error occurred: Try again. Ensure the AOI geometry is a polygon or rectangle. Very large or very small regions might not be processed either")
@@ -181,6 +176,8 @@ with tab1:
 
         except Exception as e:
             st.error("An error occurred: Please try again. ")
+
+        
             
        
         try:
@@ -220,8 +217,9 @@ with tab1:
 
 with tab1:
     if data is not None:
-        st.markdown("#### Distribution of the Variables ")
-        st.write("The boxplots depicted below offer a visual snapshot of the distribution characteristics of the variables within the designated area of interest (AOI). The intricate details captured in these graphical representations provide insights into the central tendency, dispersion, and potential outliers within the dataset, aiding in a more nuanced understanding of the underlying data dynamics. Generating these boxplots may require additional computational time, especially when dealing with larger AOIs.")
+        #st.markdown("#### Distribution of the Variables ")
+        st.markdown('<h4 style="color: rgb(69,45,34);">Distribution of the Variables</h4>', unsafe_allow_html=True)
+        st.markdown('<p style= "color:#333;">The boxplots depicted below offer a visual snapshot of the distribution characteristics of the variables within the designated area of interest (AOI). The intricate details captured in these graphical representations provide insights into the central tendency, dispersion, and potential outliers within the dataset, aiding in a more nuanced understanding of the underlying data dynamics. Generating these boxplots may require additional computational time, especially when dealing with larger AOIs.</p>', unsafe_allow_html=True)
         # try:
         #bb_clip = ee.Geometry.Polygon(bb_clip.geometry().bounds())
         # bb_shp = ee.Geometry.Rectangle([xmin, ymin, xmax, ymax])
@@ -238,6 +236,7 @@ with tab1:
             'Elevation': 'srtm'
             }
         i_variables = [properties_mapping[var] for var in selected_variables if var in properties_mapping]
+
 
         # Function to generate boxplot as bytes
         def generate_boxplot(var_name):
