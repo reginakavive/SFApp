@@ -34,10 +34,10 @@
                 <p style="color: #333;">The user will need to provide the file in .shp or .geojson formats to
                     set the AOI where the trials will be conducted. This will define the tool for which to process the different environmental units in
                     the AOI.</p>
-                <div > <img src="/assets/upload_aoi.GIF"  alt="">  </div>
+                <div > <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXYycHdmNTFkdnlpb2o3bm1sYnl4cHNiaHEyNnN5bGJpYmd3bjNkayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/WPNDLYFlifJldorne5/source.gif"  alt="" class="img-fluid">  </div>
                 <p style="color: #333;">Alternatively, the user could manually draw a shape on the map that
                     defines the region of interest.</p>
-                <div> </div>
+                <div> <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExY28wZzBrM25iaWFjcjdoeXl1MHd0cmpsdHdwb29haThxOTNxMnhtaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SmixKkw826N6zrGljZ/source.gif"  alt="">  </div>
                 <p style="color: #333;"><strong>Note</strong>: The size of the area has a limit of XXX km2.Consider this, as the tool will not work for 
                     very large areas. In case you need to run the tool for a very large AOI, you can 
                     contact <a href="mailto:xxxx.xxxxx@cgiar.org" class="email">xxxx.xxxxx@cgiar.org</a></p>
@@ -84,7 +84,7 @@
                     varieties in rainfed wheat, and therefore rainfall might be the most important environmental variable to define the
                     different environmental clusters.</p>
                 <p  style="color: #333;">The user should remove the variables from the box and only leave those that are relevant for the validation.</p>
-                <div> <img src="assets/selectvars.GIF" alt="">  </div>
+                <div> <img src="[assets/selectvars.GIF](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzdteDNvY2Z2ZHhqb2VjdmYzcTZkMWc3OG0ycGd1ZDQwZnowazJ5ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Uf1Gt7JZvrNtEzl1od/giphy.gif)" alt="">  </div>
                 <p  style="color: #333;">The user can test several combinations of variables and number of clusters and see the effects in the clusters 
                     and variable distributions until an acceptable result is obtained. Once satisfied, the user can export the user-defined clusters by 
                     clicking the “Get Results” button to download to the computer.</p>
