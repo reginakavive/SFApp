@@ -37,7 +37,11 @@
                 <div > <img src="assets/upload_aoi.GIF"  alt="">  </div>
                 <p style="color: #333;">Alternatively, the user could manually draw a shape on the map that
                     defines the region of interest.</p>
-                <div> <img src= "https://live.staticflickr.com/video/53788773123/e886b8ae42/1080p.mp4"  alt= ""> </img></div>
+                <div> <a data-flickr-embed="true" href="https://www.flickr.com/photos/195014919@N07/53788773123/in/dateposted-public/" title="SamplingFramework-Profile1-MicrosoftEdge2024-06-1012-25-30-ezgif.com-video-to-gif-converter">
+    <img src="https://live.staticflickr.com/31337/53788773123_71840af85e_k.jpg" width="1920" height="1020" alt="SamplingFramework-Profile1-MicrosoftEdge2024-06-1012-25-30-ezgif.com-video-to-gif-converter"/>
+</a>
+<script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+</div>
                 <p style="color: #333;"><strong>Note</strong>: The size of the area has a limit of XXX km2.Consider this, as the tool will not work for 
                     very large areas. In case you need to run the tool for a very large AOI, you can 
                     contact <a href="mailto:xxxx.xxxxx@cgiar.org" class="email">xxxx.xxxxx@cgiar.org</a></p>
