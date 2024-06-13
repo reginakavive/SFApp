@@ -1,9 +1,82 @@
 /* Header styles */
+.st-emotion-cache-1r4qj8v {
+    position: absolute;
+    background: rgb(255, 255, 255);
+    color: #ccc;
+    inset: 0px;
+    color-scheme: light;
+    overflow: hidden;
+}
+
+.st-emotion-cache-1gv3huu {
+    position: relative;
+    top: 2px;
+    background-color: rgb(0, 104, 56);
+    z-index: 999991;
+    min-width: 244px;
+    max-width: 550px;
+    transform: none;
+    transition: transform 300ms ease 0s, min-width 300ms ease 0s, max-width 300ms ease 0s;
+}
+
+.st-emotion-cache-1jmvea6 p {
+    word-break: break-word;
+    margin-bottom: 0px;
+    font-size: 14px;
+    color: #e9ecef;
+}
+
+.st-emotion-cache-y4bq5x {
+    display: flex;
+    visibility: visible;
+    vertical-align: middle;
+    flex-direction: row;
+    -webkit-box-align: center;
+    align-items: center;
+    color: #e9ecef;
+}
+
+
+/* button */
+.st-emotion-cache-13ejsyy:hover {
+    border-color: rgb(255, 75, 75);
+    color: #fff;
+}
+
+
+.st-emotion-cache-13ejsyy {
+    display: inline-flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    font-weight: 400;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    min-height: 38.4px;
+    margin: 0px;
+    line-height: 1.6;
+    color: #f8f9fa;
+    width: auto;
+    user-select: none;
+    background-color: rgb(195 82 31);
+    border: 1px solid rgba(49, 51, 63, 0.2);
+}
+
 h1 {
     font-size: 36px;
     color: #333; /* Dark gray */
     text-align: center;
     margin-bottom: 20px;
+}
+h2 {
+    font-family: "Source Sans Pro", sans-serif;
+    font-weight: 600;
+    color: #e9ecef;
+    letter-spacing: -0.005em;
+    padding: 1rem 0px;
+    margin: 0px;
+    line-height: 1.2;
 }
 
 /* Sidebar styles */
