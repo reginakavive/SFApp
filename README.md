@@ -4,14 +4,7 @@
     <meta charset="utf-8" >
     <meta name="generator" content="pandoc" >
     <meta http-equiv="X-UA-Compatible" content="IE=EDGE" >
-    <style>
-        img {
-            max-width: 100%;
-            max-height: 100%;
-            display: block;
-            margin: auto;
-        }
-    </style>
+    
 </head>
 <body>
     
