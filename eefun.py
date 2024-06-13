@@ -137,7 +137,7 @@ st.cache_data
 def prcSum(selected_Sdate, selected_Edate,sdate, edate,bb):
     # // Rainfall
     prc = ee.ImageCollection('UCSB-CHG/CHIRPS/DAILY') \
-                      .filter(ee.Filter.date(sdate, edate)) \
+                      .filter(ee.Filter.date('2010-01-01', '2020-12-31')) \
                       .filter(ee.Filter.calendarRange(int(selected_Sdate.strftime("%-m")), int((selected_Edate).strftime("%-m")),'month')) \
                       .select('precipitation')
     
@@ -147,7 +147,7 @@ def prcSum(selected_Sdate, selected_Edate,sdate, edate,bb):
 st.cache_data 
 def prcNrd(selected_Sdate, selected_Edate,sdate, edate,bb):    
     prc = ee.ImageCollection('UCSB-CHG/CHIRPS/DAILY') \
-                      .filter(ee.Filter.date(sdate, edate)) \
+                      .filter(ee.Filter.date('2010-01-01', '2020-12-31')) \
                       .filter(ee.Filter.calendarRange(int(selected_Sdate.strftime("%-m")), int((selected_Edate).strftime("%-m")),'month')) \
                       .select('precipitation')
     Nrd = prc.map(NrdF)    
@@ -157,7 +157,7 @@ def prcNrd(selected_Sdate, selected_Edate,sdate, edate,bb):
 st.cache_data 
 def Di(selected_Sdate, selected_Edate,sdate, edate,bb):
     prc = ee.ImageCollection('UCSB-CHG/CHIRPS/DAILY') \
-                      .filter(ee.Filter.date(sdate, edate)) \
+                      .filter(ee.Filter.date('2010-01-01', '2020-12-31')) \
                       .filter(ee.Filter.calendarRange(int(selected_Sdate.strftime("%-m")), int((selected_Edate).strftime("%-m")),'month')) \
                       .select('precipitation')
     
@@ -173,7 +173,7 @@ st.cache_data
 def tminMin(selected_Sdate, selected_Edate,sdate, edate,bb):
     tmin = ee.ImageCollection('ECMWF/ERA5/DAILY') \
                       .select('minimum_2m_air_temperature') \
-                      .filter(ee.Filter.date(sdate, edate)) \
+                      .filter(ee.Filter.date('2010-01-01', '2020-12-31')) \
                       .filter(ee.Filter.calendarRange(int(selected_Sdate.strftime("%-m")), int((selected_Edate).strftime("%-m")),'month')) 
     
     tminMin = tmin.reduce(ee.Reducer.min()).clip(bb)
@@ -183,7 +183,7 @@ st.cache_data
 def tmaxMax(selected_Sdate, selected_Edate,sdate, edate,bb):
     tmax = ee.ImageCollection('ECMWF/ERA5/DAILY') \
                       .select('maximum_2m_air_temperature') \
-                      .filter(ee.Filter.date(sdate, edate)) \
+                      .filter(ee.Filter.date('2010-01-01', '2020-12-31')) \
                       .filter(ee.Filter.calendarRange(int(selected_Sdate.strftime("%-m")), int((selected_Edate).strftime("%-m")),'month')) 
     
     tmaxMax = tmax.reduce(ee.Reducer.max()).clip(bb)
@@ -193,7 +193,7 @@ st.cache_data
 def tmeanMean(selected_Sdate, selected_Edate,sdate, edate,bb):
     tmean = ee.ImageCollection('ECMWF/ERA5/DAILY') \
                       .select('mean_2m_air_temperature') \
-                      .filter(ee.Filter.date(sdate, edate)) \
+                      .filter(ee.Filter.date('2010-01-01', '2020-12-31')) \
                       .filter(ee.Filter.calendarRange(int(selected_Sdate.strftime("%-m")), int((selected_Edate).strftime("%-m")),'month')) 
     
     tmeanMean = tmean.reduce(ee.Reducer.mean()).clip(bb);
@@ -264,7 +264,7 @@ def vectors(bb,selected_Sdate,selected_Edate,sdate,edate):
      # # #############################################################################################################################
     ## 1 - Landscape Segmentation
     dataset = ee.ImageCollection('MODIS/061/MOD13A2') \
-                      .filter(ee.Filter.date(sdate, edate)) \
+                      .filter(ee.Filter.date('2010-01-01', '2020-12-31')) \
                       .filter(ee.Filter.calendarRange(int(selected_Sdate.strftime("%-m")), int((selected_Edate).strftime("%-m")),'month')) \
                       .select('NDVI')
     
@@ -731,4 +731,4 @@ def download_data(res,stack,bb,selected_variables,prcSum,  prcNrd, Di, tmaxMax ,
     outDiss = ee.FeatureCollection(outProps.map(lambda prop: propfn(prop, selected_properties)))
     return(outDiss)
 
-
+#.filter(ee.Filter.date(sdate, edate)) \
