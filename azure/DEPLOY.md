@@ -46,7 +46,7 @@ You can deploy the ARM template by passing parameters directly through the comma
 #### Method 1: Using Command Line Parameters
 
 ```bash
-az deployment group create --resource-group eia-transform-rg --template-file azure/azuredeploy.json --parameters adminUsername=azureuser adminPassword=P@ssw0rd! nicName=myNIC nsgName=myNSG
+az deployment group create --resource-group eia-transform-resource-group --template-file azure/azuredeploy.json --parameters adminUsername=azureuser adminPassword=P@ssw0rd! nicName=myNIC nsgName=myNSG
 ```
 
 #### Method 2: Using a Parameters File

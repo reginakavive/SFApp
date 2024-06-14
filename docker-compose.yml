@@ -13,8 +13,6 @@ services:
     environment:
       GOOGLE_APPLICATION_CREDENTIALS_TEST: ${GOOGLE_APPLICATION_CREDENTIALS}
     volumes:
-#      - ./SFapp.py:/SFApp/SFapp.py
-      #      - ./eefun.py:/SFApp/eefun.py
       - ./secrets/midyear-button-379815-391083128e1a.json:/var/secrets/google/midyear-button-379815-391083128e1a.json
 
 networks:
