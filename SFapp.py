@@ -21,8 +21,8 @@ from eefun import *
 # ee.Initialize(project='midyear-button-379815')
 
 
-logo = "EiA_logo.png"
-logo2 = "EiA_logo2.png"
+logo = "assets/EiA_logo.png"
+logo2 = "assets/EiA_logo2.png"
 # Wide app layout
 st.set_page_config(layout="wide", page_title="Sampling Framework", page_icon=logo2)
 st.header(":green[Sampling Framework]")
