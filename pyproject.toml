@@ -3,9 +3,9 @@ name = "sfapp"
 version = "1.0.0"
 description = "This tool provides users with a solution to select relevant areas and locations where they can conduct the validation trials for their Minimum Viable Products (MVP’s)."
 authors = [
-    "Regina Kavive <reginakavive@users.noreply.github.com> ",
-    "Eduardo B <egbendito@users.noreply.github.com",
-    "Munywele S <masgeek@users.noreply.github.com"
+    "Regina Kavive",
+    "Eduardo B",
+    "Munywele S"
 ]
 license = "MIT"
 readme = "README.md"
