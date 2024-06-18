@@ -27,6 +27,9 @@ mamba = "^0.11.3"
 chardet = "^5.2.0"
 
 
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.2.3"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
