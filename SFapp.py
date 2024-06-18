@@ -1,4 +1,3 @@
-import chardet
 import ee
 import geojson
 import streamlit as st
@@ -206,7 +205,7 @@ with tab1:
 
             # downloaderr_input = st.sidebar.button('Get Results')
 
-            # if downloaderr_input: 
+            # if downloaderr_input:
             #     outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
 
             #     task = ee.batch.Export.table.toCloudStorage(
@@ -215,20 +214,20 @@ with tab1:
             #         bucket='eia2030',  # specify the name of your GCS bucket
             #         fileNamePrefix=f'Data_{selected_Crop}_{aoiname}',
             #         fileFormat='KML'
-            #     )                
+            #     )
             #     # Start the export task
             #     task.start()
 
             #     while task.active():
-            #         pass       
+            #         pass
 
             #     # Get the export task status
-            #     status = task.status()['state']                
+            #     status = task.status()['state']
             #     if status == 'COMPLETED':
             #         # Get the download URL
             #         download_url = task.status()['destination_uris'][0]
             #         # Download the file to local machine
-            #         urllib.request.urlretrieve(download_url, f'Data_{selected_Crop}_{aoiname}.kml')                
+            #         urllib.request.urlretrieve(download_url, f'Data_{selected_Crop}_{aoiname}.kml')
             #     else:
             #         print("Export task failed or hasn't completed yet.")
         except Exception as e:
@@ -246,7 +245,7 @@ with tab1:
         # try:
         # bb_clip = ee.Geometry.Polygon(bb_clip.geometry().bounds())
         # bb_shp = ee.Geometry.Rectangle([xmin, ymin, xmax, ymax])
-        # aoi_area = bb_shp.area().getInfo()   
+        # aoi_area = bb_shp.area().getInfo()
 
         properties_mapping = {
             'Rainfall Total': 'prcSum',
@@ -272,7 +271,7 @@ with tab1:
 
                 # # Get the nominal scale of the projection
                 # scale = dta.projection().nominalScale().getInfo()
-                # scale_value = math.sqrt(aoi_area) / scale   
+                # scale_value = math.sqrt(aoi_area) / scale
                 # scale_value = min(scale_value, 1000)  # Adjust maximum scale value as needed
                 # Sample the image data
                 # data = dta.sample(scale=scale_value, factor=0.4, region=bb_clip)
