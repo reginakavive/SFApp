@@ -342,4 +342,3 @@ with tab1:
 
         # except Exception as e:
         #     st.error("An error occurred: There is an issue with boxplots.")      
-

@@ -1,3 +1,4 @@
 .env
 .idea
 azuredeploy.parameters.json
+__pycache__

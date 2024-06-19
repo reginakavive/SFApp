@@ -2,6 +2,9 @@ import ee
 import streamlit as st
 from google.cloud import storage
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def authenticate_implicit_with_adc(project_id="google-earth-engine"):

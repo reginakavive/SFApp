@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "sfapp"
+version = "1.0.0"
+description = "This tool provides users with a solution to select relevant areas and locations where they can conduct the validation trials for their Minimum Viable Products (MVP’s)."
+authors = [
+    "Regina Kavive",
+    "Eduardo B",
+    "Munywele S"
+]
+license = "MIT"
+readme = "README.md"
+package-mode=false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+earthengine-api = "^0.1.407"
+geojson = "^3.1.0"
+streamlit = "^1.35.0"
+geopandas = "^0.14.4"
+plotly = "^5.22.0"
+geemap = "^0.32.1"
+python-dotenv = "^1.0.1"
+datetime = "^5.5"
+shapely = "^2.0.4"
+matplotlib = "^3.9.0"
+mamba = "^0.11.3"
+chardet = "^5.2.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.2.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
