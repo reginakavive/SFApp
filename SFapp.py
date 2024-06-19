@@ -188,11 +188,11 @@ with tab1:
                         with open(file_path, 'rb') as f:
                              kml_data = f.read()
                         return kml_data
-                    download_data=download_file(data_path)
+                    kml_data=download_file(data_path)
                     
                     st.sidebar.download_button(
                         label='Get Results',
-                        data= download_data,
+                        data= kml_data,
                         file_name=f'Data_{selected_Crop}_{current_time}.kml',
                         mime='application/kml'
                     )
@@ -250,16 +250,16 @@ with tab1:
                 st.sidebar.write("## Download: ")
                 st.sidebar.markdown("Are you satisfied with the results? If yes, generate link below and Click 'Get Results' to download the results of the modified clustering for use." )
                                 
-                if st.sidebar.checkbox("Generate Download Link"):
+                if st.sidebar.checkbox("Generate Download Link2"):
                     outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
-                    st.sidebar.write("Click below to download file")
-                    current_time2 = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                    gcs_path2 = f'data_{current_time2}'
+                    st.sidebar.write("Click below to download the results of the modified clustering")
+                    current_time = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                    gcs_path = f'data_{current_time}'
                     task = ee.batch.Export.table.toCloudStorage(
                         collection=outDiss,
                         description='Export KML to GCS',
                         bucket='eia2030',  # specify the name of your GCS bucket
-                        fileNamePrefix = gcs_path2,
+                        fileNamePrefix = gcs_path,
                         fileFormat='KML'
                     )     
                     task.start()
@@ -276,17 +276,17 @@ with tab1:
                             blob.download_to_filename(destination_path)
                             return destination_path
                             
-                        data_path2 = download_from_gcs('eia2030', f'{gcs_path}.kml', "/tmp/f'{gcs_path}.kml'") 
+                        data_path = download_from_gcs('eia2030', f'{gcs_path}.kml', "/tmp/f'{gcs_path}.kml'") 
                         def download_file(file_path):
                             with open(file_path, 'rb') as f:
                                  kml_data = f.read()
                             return kml_data
-                        download_data=download_file(data_path2)
+                        kml_data=download_file(data_path)
                         
                         st.sidebar.download_button(
-                            label='Get Resultss',
-                            data= download_data,
-                            file_name=f'Data_{selected_Crop}_{current_time2}.kml',
+                            label='Get Results2',
+                            data= kml_data,
+                            file_name=f'Data_{selected_Crop}_{current_time}.kml',
                             mime='application/kml'
                         )
         except Exception as e:
