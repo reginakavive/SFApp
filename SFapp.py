@@ -72,7 +72,7 @@ tab1, tab2 = st.tabs([":orange[The App]", ":orange[How It Works]"])
 with tab2:
     #st.write("How It Works") 
     # Read HTML file
-    with open('HowTo.html', 'rb') as file:
+    with open('HowTo.html', 'r') as file:
         html_content = file.read()
 
     # Display HTML content
