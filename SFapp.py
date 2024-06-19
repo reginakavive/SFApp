@@ -72,7 +72,7 @@ tab1, tab2 = st.tabs([":orange[The App]", ":orange[How It Works]"])
 with tab2:
     #st.write("How It Works") 
     # Read HTML file
-    with open('HowTo.html', 'r') as file:
+    with open('HowTo.html', 'rb') as file:
         html_content = file.read()
 
     # Display HTML content
@@ -104,14 +104,15 @@ with tab1:
             Map = geemap.Map(center=centroid_coords, zoom=8)
             Map.add_gdf(poly,  'AOI') 
             #Map.addLayer(bb, {}, 'Bounding Box')
-            
+            selected_Sdate1 = (datetime.date.today() - datetime.timedelta(days=5*365))
+            selected_Edate1 = datetime.date.today()
     
-            sdate = ee.Date.fromYMD(int(selected_Sdate.strftime("%Y")),
-                                int(selected_Sdate.strftime("%-m")),
-                                int(selected_Sdate.strftime("%-d")))
-            edate = ee.Date.fromYMD(int((selected_Edate).strftime("%Y")),
-                                int((selected_Edate).strftime("%-m")),
-                                int((selected_Edate).strftime("%-d")))
+            sdate = ee.Date.fromYMD(int(selected_Sdate1.strftime("%Y")),
+                                int(selected_Sdate1.strftime("%-m")),
+                                int(selected_Sdate1.strftime("%-d")))
+            edate = ee.Date.fromYMD(int((selected_Edate1).strftime("%Y")),
+                                int((selected_Edate1).strftime("%-m")),
+                                int((selected_Edate1).strftime("%-d")))
     
             #reccommended agronomic variables as per crop
             if selected_Crop == "Maize":
@@ -140,20 +141,6 @@ with tab1:
             training = get_training(bb,vectors,selected_variables,prcSum,  prcNrd, Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
             x = get_x(training,selected_variables)
             
-
-        except Exception as e:
-            st.error("An error occurred: Try again. Ensure the AOI geometry is a polygon or rectangle. Very large or very small regions might not be processed either")
-
-        try:
-            variable_modification_options = st.sidebar.checkbox("Modify Variables", key="variable_modification")
-            if variable_modification_options:
-                selected_variables = st.sidebar.multiselect('Variables', varlist, default = selected_variables)
-            if not variable_modification_options:
-                #display default variables 
-                v = str(selected_variables)
-                var_clean_list = ", ".join(selected_variables)
-                st.sidebar.write("Variables: ", var_clean_list)  
-
             #generate cluster output
             res = get_res_xmeans(training,selected_variables,x)
     
@@ -161,79 +148,150 @@ with tab1:
             bb_clip = mapping(poly.geometry.unary_union)
             res = res.clip(bb_clip)        
     
-            Map.addLayer (res.randomVisualizer(), {}, 'Xmeans')
+            Map.addLayer (res.randomVisualizer(), {}, 'Xmeans')  
+        except Exception as e:
+            st.error(e)
+            #st.error("An error occurred: Try again. Ensure the AOI geometry is a polygon or rectangle. Very large or very small regions might not be processed either")
+            
+        try:
+            st.sidebar.write("## Download: ")
+            st.sidebar.markdown("Are you satisfied with the results? If yes, generate link below and Click 'Get Results' to download the results of unsupervised optimized clustering for use." )
+
+            if st.sidebar.checkbox("Generate Download Link."):
+                outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
+                st.sidebar.write("Click below to download file")
+                current_time = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                gcs_path = f'data_{current_time}'
+                task = ee.batch.Export.table.toCloudStorage(
+                    collection=outDiss,
+                    description='Export KML to GCS',
+                    bucket='eia2030',  # specify the name of your GCS bucket
+                    fileNamePrefix = gcs_path,
+                    fileFormat='KML'
+                )     
+                task.start()
+                while task.active():
+                    pass  
+                #Get the export task status
+                status = task.status()['state'] 
+                if status == 'COMPLETED':
+                    # Function to download file from GCS
+                    def download_from_gcs(bucket_name, file_path, destination_path):
+                        storage_client = storage.Client()
+                        bucket = storage_client.bucket(bucket_name)
+                        blob = bucket.blob(file_path)
+                        blob.download_to_filename(destination_path)
+                        return destination_path
+                        
+                    data_path = download_from_gcs('eia2030', f'{gcs_path}.kml', "/tmp/f'{gcs_path}.kml'") 
+                    def download_file(file_path):
+                        with open(file_path, 'rb') as f:
+                             kml_data = f.read()
+                        return kml_data
+                    download_data=download_file(data_path)
+                    
+                    st.sidebar.download_button(
+                        label='Get Results',
+                        data= download_data,
+                        file_name=f'Data_{selected_Crop}_{current_time}.kml',
+                        mime='application/kml'
+                    )
+            
+       
+        except Exception as e:
+            st.error(e)
+            # st.error("An error occurred: There is an issue with your file download. Try again")              
+            
+
+        
+
+        try:
+            # numClusters = outDiss.size()
+            numClusters = get_numClusters(bb,training,selected_variables,x)     
+            #st.write(numClusters.getInfo())
+            numClusters = numClusters.getInfo()
+            cluster_options =list(range( 1, 101))
+            if numClusters in cluster_options:
+                cluster_options.remove(numClusters)
+            cluster_options= [numClusters]+ cluster_options
+            
+            st.sidebar.write("## Considering a revision of the clustering: modify variables and/or the number of clusters ")
+            variable_modification_options = st.sidebar.checkbox("Modify Variables", key="variable_modification")
+            if variable_modification_options:
+                selected_variables = st.sidebar.multiselect('Current Variables', varlist, default = selected_variables)
+            if not variable_modification_options:
+                #display default variables 
+                v = str(selected_variables)
+                var_clean_list = ", ".join(selected_variables)
+                st.sidebar.write("Variables: ", var_clean_list)              
     
             cluster_modification_options = st.sidebar.checkbox("Modify Clusters", key="cluster_modification")        
             if not cluster_modification_options:
-                cluster_list = st.sidebar.write("Clusters: Optimal number of clusters used")
+                cluster_list = st.sidebar.write("Current Clusters: Optimal number of clusters used")
             if cluster_modification_options:
-                cluster_selection = st.sidebar.selectbox('Clusters', [1, 2, 3, 4, 5, 6, 7, 8, 9],index=3)
+                cluster_selection = st.sidebar.selectbox('Clusters', cluster_options,index=0)
+                
     
-                res = get_res_kmeans(training,selected_variables,cluster_selection,x)
-                res = res.clip(bb_clip)
-        
-                Map.addLayer (res.randomVisualizer(), {}, 'Kmeans')	
+                	
 
         except Exception as e:
-            st.error("An error occurred: Please try again. ")
-
+            st.error(e)
+            #st.error("An error occurred: Please try again. ")
         
             
        
         try:
-            st.sidebar.write("## Download: ")
-            st.sidebar.markdown("Are you satisfied with the results? If yes, Click 'Get Results' to download the results for use." )
-            outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
+            if variable_modification_options or cluster_modification_options:
+                res = get_res_kmeans(training,selected_variables,cluster_selection,x)
+                res = res.clip(bb_clip)
+        
+                Map.addLayer (res.randomVisualizer(), {}, 'Kmeans')
             
-            task = ee.batch.Export.table.toCloudStorage(
-                collection=outDiss,
-                description='Export KML to GCS',
-                bucket='eia2030',  # specify the name of your GCS bucket
-                fileNamePrefix=f'Data_{selected_Crop}_{aoiname}',
-                fileFormat='KML'
-            )                
-            # Start the export task
-            task.start()
-            while task.active():
-                pass  
-            # Get the export task status
-            status = task.status()['state'] 
-            # Get the download URL
-            download_url = task.status()['destination_uris'][0]
-            # Download the file to local machine
-            # urllib.request.urlretrieve(download_url, f'Data_{selected_Crop}_{aoiname}.kml')
-            
-            st.sidebar.download_button('Get Results',download_url, file_name=f'Data_{selected_Crop}.kml')
-                
-            # downloaderr_input = st.sidebar.button('Get Results')
-            
-            # if downloaderr_input: 
-            #     outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
-               
-            #     task = ee.batch.Export.table.toCloudStorage(
-            #         collection=outDiss,
-            #         description='Export KML to GCS',
-            #         bucket='eia2030',  # specify the name of your GCS bucket
-            #         fileNamePrefix=f'Data_{selected_Crop}_{aoiname}',
-            #         fileFormat='KML'
-            #     )                
-            #     # Start the export task
-            #     task.start()
-                
-            #     while task.active():
-            #         pass       
-                    
-            #     # Get the export task status
-            #     status = task.status()['state']                
-            #     if status == 'COMPLETED':
-            #         # Get the download URL
-            #         download_url = task.status()['destination_uris'][0]
-            #         # Download the file to local machine
-            #         urllib.request.urlretrieve(download_url, f'Data_{selected_Crop}_{aoiname}.kml')                
-            #     else:
-            #         print("Export task failed or hasn't completed yet.")
+                st.sidebar.write("## Download: ")
+                st.sidebar.markdown("Are you satisfied with the results? If yes, generate link below and Click 'Get Results' to download the results of the modified clustering for use." )
+                                
+                if st.sidebar.checkbox("Generate Download Link"):
+                    outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
+                    st.sidebar.write("Click below to download file")
+                    current_time2 = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                    gcs_path2 = f'data_{current_time2}'
+                    task = ee.batch.Export.table.toCloudStorage(
+                        collection=outDiss,
+                        description='Export KML to GCS',
+                        bucket='eia2030',  # specify the name of your GCS bucket
+                        fileNamePrefix = gcs_path2,
+                        fileFormat='KML'
+                    )     
+                    task.start()
+                    while task.active():
+                        pass  
+                    #Get the export task status
+                    status = task.status()['state'] 
+                    if status == 'COMPLETED':
+                        # Function to download file from GCS
+                        def download_from_gcs(bucket_name, file_path, destination_path):
+                            storage_client = storage.Client()
+                            bucket = storage_client.bucket(bucket_name)
+                            blob = bucket.blob(file_path)
+                            blob.download_to_filename(destination_path)
+                            return destination_path
+                            
+                        data_path2 = download_from_gcs('eia2030', f'{gcs_path}.kml', "/tmp/f'{gcs_path}.kml'") 
+                        def download_file(file_path):
+                            with open(file_path, 'rb') as f:
+                                 kml_data = f.read()
+                            return kml_data
+                        download_data=download_file(data_path2)
+                        
+                        st.sidebar.download_button(
+                            label='Get Resultss',
+                            data= download_data,
+                            file_name=f'Data_{selected_Crop}_{current_time2}.kml',
+                            mime='application/kml'
+                        )
         except Exception as e:
-            st.error("An error occurred: There is an issue with your file download. Try again")   
+            st.error(e)
+            # st.error("An error occurred: There is an issue with your file download. Try again")   
 
     Map.to_streamlit(height=600)
 
@@ -314,31 +372,4 @@ with tab1:
         
         # Display the plot
         st.plotly_chart(fig, use_container_width=True)
-                    
-                    # #fig = go.Figure(data=[go.Box(y=plot_bytes)])
-                    # img =plot_bytes
-                    # #fig.add_trace(go.Box(y=plot_bytes, name=f"{var_name}", boxmean='sd'))
-                    # img.update_layout(title=f"Boxplot of {var_name}", xaxis_title=var_name, yaxis_title="Values")
-                    # st.plotly_chart(fig,use_container_width=True)
 
-                    
-            #         img = plt.imread(io.BytesIO(plot_bytes))
-            #         img = plt.imread(io.BytesIO(plot_bytes))
-            #         ax.imshow(img)
-            #         ax.set_title(var_name)
-            #         ax.axis('off')  # Turn off axis
-            #         ax.set_xticks([])  # Remove ticks on x-axis
-            #         ax.set_yticks([])  # Remove ticks on y-axis
-            # else:
-            #     ax.axis('off')  # Turn off empty subplots
-
-
-        # plt.tight_layout()
-        # # st.pyplot(fig)
-        # st.plotly_chart(fig)
-        
-        
-        # st.plotly_chart(fig)
-
-        # except Exception as e:
-        #     st.error("An error occurred: There is an issue with boxplots.")      
