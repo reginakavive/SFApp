@@ -12,6 +12,7 @@ services:
       - 8501:8501
     environment:
       GOOGLE_APPLICATION_CREDENTIALS_TEST: ${GOOGLE_APPLICATION_CREDENTIALS}
+      AUTH_MECHANISM: ${AUTH_MECHANISM}
     volumes:
       - ./secrets/midyear-button-379815-391083128e1a.json:/var/secrets/google/midyear-button-379815-391083128e1a.json
 
