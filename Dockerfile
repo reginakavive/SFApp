@@ -24,7 +24,7 @@ RUN conda install -y -c conda-forge mamba  && \
     mamba install -y -c conda-forge geemap
 
 # Install Python dependencies
-RUN pip3 install streamlit geojson geopandas datetime shapely matplotlib plotly
+RUN pip3 install streamlit geojson geopandas datetime shapely matplotlib plotly python-dotenv
 
 # Second stage: Final image with only the necessary components
 FROM python:3.9-slim
