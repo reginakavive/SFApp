@@ -2,8 +2,8 @@ name: sfa
 
 services:
   sfa:
-    container_name: sfau
-    image: iita/sfapp:latest
+    container_name: sfa
+    image: iita/sf-app:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,7 +11,7 @@ services:
     ports:
       - 8501:8501
     environment:
-      GOOGLE_APPLICATION_CREDENTIALS_TEST: ${GOOGLE_APPLICATION_CREDENTIALS}
+      #GOOGLE_APPLICATION_CREDENTIALS_TEST: ${GOOGLE_APPLICATION_CREDENTIALS}
       AUTH_MECHANISM: ${AUTH_MECHANISM}
     volumes:
       - ~/secrets/sampling-frames-iita-a80b3e765388.json:/var/secrets/google/sampling-frames-iita-a80b3e765388.json
