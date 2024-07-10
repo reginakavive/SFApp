@@ -8,7 +8,7 @@ load_dotenv()
 
 auth_mechanism = os.environ.get('AUTH_MECHANISM', default='interactive')
 google_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS',
-                                    default='/home/jovyan/samplingFW/GIT/SFApp/sampling-frames-iita-a80b3e765388.json')
+                                    default='/var/secrets/google/sampling-frames-iita-a80b3e765388.json')
 service_account = os.environ.get('SERVICE_ACCOUNT', default='sampling-frames@valued-proton-426311-r0.iam.gserviceaccount.com')
 
 # # # Need to refresh token every week
@@ -20,10 +20,11 @@ else:
     ee.Initialize(credentials)
 
 
-def authenticate_implicit_with_adc(project_id="valued-proton-426311-r0"):
-    client = storage.Client("valued-proton-426311-r0")
+def authenticate_implicit_with_adc(project_id="google-earth-engine"):
+    client = storage.Client("google-earth-engine")
     bucket = client.get_bucket("sfapp-eia")
     
+# /home/jovyan/samplingFW/GIT/SFApp/
 # auth_mechanism = os.environ.get('AUTH_MECHANISM', default='interactive')
 # google_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS',
 #                                     default='/var/secrets/google/midyear-button-379815-391083128e1a.json')
