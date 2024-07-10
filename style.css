@@ -35,7 +35,19 @@
     align-items: center;
     color: #e9ecef;
 }
-
+.st-emotion-cache-ue6h4q {
+    font-size: 14px;
+    color: #e9ecef;
+    display: flex;
+    visibility: visible;
+    margin-bottom: 0.25rem;
+    height: auto;
+    min-height: 1.5rem;
+    vertical-align: middle;
+    flex-direction: row;
+    -webkit-box-align: center;
+    align-items: center;
+}
 
 /* button */
 .st-emotion-cache-13ejsyy:hover {
@@ -62,7 +74,28 @@
     background-color: rgb(195 82 31);
     border: 1px solid rgba(49, 51, 63, 0.2);
 }
-
+.st-emotion-cache-1ny7cjd {
+    display: inline-flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    font-weight: 400;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    min-height: 2.5rem;
+    margin: 0px;
+    line-height: 1.6;
+    color: #f8f9fa;
+    width: auto;
+    user-select: none;
+    background-color: rgb(195 82 31);
+    border: 1px solid rgba(49, 51, 63, 0.2);
+}
+.st-emotion-cache-uzeiqp th, .st-emotion-cache-uzeiqp td {
+    padding: 6px 13px;
+    border: 1px solid #fff;
+}
 h1 {
     font-size: 36px;
     color: #333; /* Dark gray */
@@ -143,4 +176,25 @@ st.sidebar {
     font-size: 14px;
     color: #006400; /* Dark Green */
     margin-top: 20px;
+}
+
+/* Print styles */
+@media print {
+    /* Adjust scale to 50% */
+    @page {
+        size: A4; /* You can specify other paper sizes like Letter if needed */
+        margin: 10mm; /* Adjust margins as per your requirement */
+        transform: scale(0.5); /* Scale down to 50% */
+        transform-origin: top left; /* Ensure content starts from top left */
+    }
+
+    /* Ensure portrait orientation */
+    @page {
+        size: portrait;
+    }
+
+    /* Example of hiding elements not needed in print */
+    .no-print {
+        display: none;
+    }
 }

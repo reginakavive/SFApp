@@ -8,21 +8,39 @@ load_dotenv()
 
 auth_mechanism = os.environ.get('AUTH_MECHANISM', default='interactive')
 google_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS',
-                                    default='/var/secrets/google/midyear-button-379815-391083128e1a.json')
-service_account = os.environ.get('SERVICE_ACCOUNT', default='eia-gee@midyear-button-379815.iam.gserviceaccount.com')
+                                    default='/home/jovyan/samplingFW/GIT/SFApp/sampling-frames-iita-a80b3e765388.json')
+service_account = os.environ.get('SERVICE_ACCOUNT', default='sampling-frames@valued-proton-426311-r0.iam.gserviceaccount.com')
 
 # # # Need to refresh token every week
 if auth_mechanism == 'interactive':
     ee.Authenticate()
-    ee.Initialize(project='midyear-button-379815')
+    ee.Initialize(project='valued-proton-426311-r0')
 else:
     credentials = ee.ServiceAccountCredentials(service_account, google_credentials)
     ee.Initialize(credentials)
 
 
-def authenticate_implicit_with_adc(project_id="google-earth-engine"):
-    client = storage.Client("google-earth-engine")
-    bucket = client.get_bucket("eia2030")
+def authenticate_implicit_with_adc(project_id="valued-proton-426311-r0"):
+    client = storage.Client("valued-proton-426311-r0")
+    bucket = client.get_bucket("sfapp-eia")
+    
+# auth_mechanism = os.environ.get('AUTH_MECHANISM', default='interactive')
+# google_credentials = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS',
+#                                     default='/var/secrets/google/midyear-button-379815-391083128e1a.json')
+# service_account = os.environ.get('SERVICE_ACCOUNT', default='eia-gee@midyear-button-379815.iam.gserviceaccount.com')
+
+# # # # Need to refresh token every week
+# if auth_mechanism == 'interactive':
+#     ee.Authenticate()
+#     ee.Initialize(project='midyear-button-379815')
+# else:
+#     credentials = ee.ServiceAccountCredentials(service_account, google_credentials)
+#     ee.Initialize(credentials)
+
+
+# def authenticate_implicit_with_adc(project_id="google-earth-engine"):
+#     client = storage.Client("google-earth-engine")
+#     bucket = client.get_bucket("eia2030")
 
 # #############################################################################################################################
 # Define all required functions
@@ -110,7 +128,15 @@ def subset(feature, selected_variables):
         'Temperature Minimum': '4_tminMin_median',
         'Temperature Mean': '5_tmeanMean_median',
         'Soil Zinc': '6_zinc_median',
-        'Elevation': '7_srtm_median'
+        'Elevation': '7_srtm_median',
+        'Elevation': '7_srtm_median',
+        'Slope':  '8_slp_median', 
+        'Soil Organic Carbon': '9_SOCmean_median',
+        'Soil pH':  '10_pHmean_median',
+        'Soil CEC': '11_CECmean_median',
+        'Soil Nitrogen':'12_Nmean_median',
+        'Soil Clay': '13_claymean_median',         
+        'Soil Sand': '14_sandmean_median'
     }
 
     # Filtering out properties not in the selected variables list
@@ -241,26 +267,38 @@ def slp(bb):
     slp = ee.Terrain.slope(srtm)
     return slp
 
-    #     # // Soil
-    # SOC = ee.Image("projects/soilgrids-isric/ocd_mean") \
-    #   .select('ocd_0-5cm_mean', 'ocd_5-15cm_mean','ocd_15-30cm_mean')
-    # SOCmean = SOC.reduce(ee.Reducer.mean()).clip(bb)
+    # // Soil
+def SOCmean(bb):    
+    SOC = ee.Image("projects/soilgrids-isric/ocd_mean") \
+      .select('ocd_0-5cm_mean', 'ocd_5-15cm_mean','ocd_15-30cm_mean')
+    SOCmean = SOC.reduce(ee.Reducer.mean()).clip(bb)
+    return SOCmean
 
-    # pH = ee.Image("projects/soilgrids-isric/phh2o_mean") \
-    #  .select('phh2o_0-5cm_mean', 'phh2o_5-15cm_mean','phh2o_15-30cm_mean')
-    # pHmean = pH.reduce(ee.Reducer.mean()).clip(bb)
+def pHmean(bb): 
+    pH = ee.Image("projects/soilgrids-isric/phh2o_mean") \
+     .select('phh2o_0-5cm_mean', 'phh2o_5-15cm_mean','phh2o_15-30cm_mean')
+    pHmean = pH.reduce(ee.Reducer.mean()).clip(bb)
+    return pHmean
 
-    # CEC = ee.Image("projects/soilgrids-isric/cec_mean").select('cec_0-5cm_mean', 'cec_5-15cm_mean','cec_15-30cm_mean')
-    # CECmean = CEC.reduce(ee.Reducer.mean()).clip(bb)
+def CECmean(bb): 
+    CEC = ee.Image("projects/soilgrids-isric/cec_mean").select('cec_0-5cm_mean', 'cec_5-15cm_mean','cec_15-30cm_mean')
+    CECmean = CEC.reduce(ee.Reducer.mean()).clip(bb)
+    return CECmean
 
-    # N = ee.Image("projects/soilgrids-isric/nitrogen_mean").select('nitrogen_0-5cm_mean', 'nitrogen_5-15cm_mean','nitrogen_15-30cm_mean');
-    # Nmean = N.reduce(ee.Reducer.mean()).clip(bb)
+def Nmean(bb): 
+    N = ee.Image("projects/soilgrids-isric/nitrogen_mean").select('nitrogen_0-5cm_mean', 'nitrogen_5-15cm_mean','nitrogen_15-30cm_mean');
+    Nmean = N.reduce(ee.Reducer.mean()).clip(bb)
+    return Nmean
 
-    # clay = ee.Image("projects/soilgrids-isric/clay_mean").select('clay_0-5cm_mean', 'clay_5-15cm_mean','clay_15-30cm_mean')
-    # claymean = clay.reduce(ee.Reducer.mean()).clip(bb)
+def claymean(bb): 
+    clay = ee.Image("projects/soilgrids-isric/clay_mean").select('clay_0-5cm_mean', 'clay_5-15cm_mean','clay_15-30cm_mean')
+    claymean = clay.reduce(ee.Reducer.mean()).clip(bb)
+    return claymean
 
-    # sand = ee.Image("projects/soilgrids-isric/sand_mean").select('sand_0-5cm_mean', 'sand_5-15cm_mean','sand_15-30cm_mean')
-    # sandmean = sand.reduce(ee.Reducer.mean()).clip(bb)
+def sandmean(bb): 
+    sand = ee.Image("projects/soilgrids-isric/sand_mean").select('sand_0-5cm_mean', 'sand_5-15cm_mean','sand_15-30cm_mean')
+    sandmean = sand.reduce(ee.Reducer.mean()).clip(bb)
+    return sandmean
 
 
 def vectors(bb, selected_Sdate, selected_Edate, sdate, edate):
@@ -318,7 +356,7 @@ def vectors(bb, selected_Sdate, selected_Edate, sdate, edate):
 
 
 def stackk(bb, selected_Sdate, selected_Edate, sdate, edate, selected_variables, prcSum, prcNrd, Di, tmaxMax, tminMin,
-           tmeanMean, zinc, srtm):
+           tmeanMean, zinc,srtm,slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean):
     # Rescale values between 0-1
     def rescale(img):
         mm = img.reduceRegion(reducer=ee.Reducer.minMax(), bestEffort=True, geometry=bb)
@@ -348,7 +386,15 @@ def stackk(bb, selected_Sdate, selected_Edate, sdate, edate, selected_variables,
         'Temperature Minimum': '4_tminMin',
         'Temperature Mean': '5_tmeanMean',
         'Soil Zinc': '6_zinc',
-        'Elevation': '7_srtm'
+        'Elevation': '7_srtm',
+        'Slope':  '8_slp', 
+        'Soil Organic Carbon': '9_SOCmean',
+        'Soil pH':  '10_pHmean',
+        'Soil CEC': '11_CECmean',
+        'Soil Nitrogen':'12_Nmean',
+        'Soil Clay': '13_claymean',         
+        'Soil Sand': '14_sandmean'
+        
     }
 
     stack_variables = [properties_mapping[var] for var in selected_variables if var in properties_mapping]
@@ -387,7 +433,36 @@ def stackk(bb, selected_Sdate, selected_Edate, sdate, edate, selected_variables,
         srtm.unitScale(ee.Number(rescale(srtm.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
                        rescale(srtm.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
                                                                                                        scale=1000).toFloat().rename(
-            'srtm')
+            'srtm'),
+        # slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean
+        slp.unitScale(ee.Number(rescale(slp.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(slp.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'slp'),
+        SOCmean.unitScale(ee.Number(rescale(SOCmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(SOCmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'SOCmean'),
+        pHmean.unitScale(ee.Number(rescale(pHmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(pHmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'pHmean'),
+        CECmean.unitScale(ee.Number(rescale(CECmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(CECmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'CECmean'),
+        Nmean.unitScale(ee.Number(rescale(Nmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(Nmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'Nmean'),
+        claymean.unitScale(ee.Number(rescale(claymean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(claymean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'claymean'),
+        sandmean.unitScale(ee.Number(rescale(sandmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(sandmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'sandmean')
     ])
 
     stack = stack.toBands()
@@ -395,7 +470,7 @@ def stackk(bb, selected_Sdate, selected_Edate, sdate, edate, selected_variables,
     return stack
 
 
-def get_training(bb, vectors, selected_variables, prcSum, prcNrd, Di, tmaxMax, tminMin, tmeanMean, zinc, srtm):
+def get_training(bb, vectors, selected_variables, prcSum, prcNrd, Di, tmaxMax, tminMin, tmeanMean, zinc, srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean):
     # Rescale values between 0-1
     def rescale(img):
         mm = img.reduceRegion(reducer=ee.Reducer.minMax(), bestEffort=True, geometry=bb)
@@ -425,7 +500,14 @@ def get_training(bb, vectors, selected_variables, prcSum, prcNrd, Di, tmaxMax, t
         'Temperature Minimum': '4_tminMin',
         'Temperature Mean': '5_tmeanMean',
         'Soil Zinc': '6_zinc',
-        'Elevation': '7_srtm'
+        'Elevation': '7_srtm',
+        'Slope':  '8_slp', 
+        'Soil Organic Carbon': '9_SOCmean',
+        'Soil pH':  '10_pHmean',
+        'Soil CEC': '11_CECmean',
+        'Soil Nitrogen':'12_Nmean',
+        'Soil Clay': '13_claymean',         
+        'Soil Sand': '14_sandmean'
     }
 
     stack_variables = [properties_mapping[var] for var in selected_variables if var in properties_mapping]
@@ -464,7 +546,36 @@ def get_training(bb, vectors, selected_variables, prcSum, prcNrd, Di, tmaxMax, t
         srtm.unitScale(ee.Number(rescale(srtm.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
                        rescale(srtm.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
                                                                                                        scale=1000).toFloat().rename(
-            'srtm')
+            'srtm'), 
+        # slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean
+        slp.unitScale(ee.Number(rescale(slp.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(slp.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'slp'),
+        SOCmean.unitScale(ee.Number(rescale(SOCmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(SOCmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'SOCmean'),
+        pHmean.unitScale(ee.Number(rescale(pHmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(pHmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'pHmean'),
+        CECmean.unitScale(ee.Number(rescale(CECmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(CECmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'CECmean'),
+        Nmean.unitScale(ee.Number(rescale(Nmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(Nmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'Nmean'),
+        claymean.unitScale(ee.Number(rescale(claymean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(claymean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'claymean'),
+        sandmean.unitScale(ee.Number(rescale(sandmean.reproject(crs='EPSG:4326', scale=1000)).values().get(1)),
+                       rescale(sandmean.reproject(crs='EPSG:4326', scale=1000)).values().get(0)).reproject(crs='EPSG:4326',
+                                                                                                       scale=1000).toFloat().rename(
+            'sandmean')
     ])
 
     # stack = stack.toBands()
@@ -478,7 +589,14 @@ def get_training(bb, vectors, selected_variables, prcSum, prcNrd, Di, tmaxMax, t
         'Temperature Minimum': '4_tminMin_median',
         'Temperature Mean': '5_tmeanMean_median',
         'Soil Zinc': '6_zinc_median',
-        'Elevation': '7_srtm_median'
+        'Elevation': '7_srtm_median',
+        'Slope':  '8_slp_median', 
+        'Soil Organic Carbon': '9_SOCmean_median',
+        'Soil pH':  '10_pHmean_median',
+        'Soil CEC': '11_CECmean_median',
+        'Soil Nitrogen':'12_Nmean_median',
+        'Soil Clay': '13_claymean_median',         
+        'Soil Sand': '14_sandmean_median'
     }
 
     # Filtering out properties not in the selected variables list
@@ -527,7 +645,14 @@ def get_x(training, selected_variables):
         'Temperature Minimum': '4_tminMin_median',
         'Temperature Mean': '5_tmeanMean_median',
         'Soil Zinc': '6_zinc_median',
-        'Elevation': '7_srtm_median'
+        'Elevation': '7_srtm_median',
+        'Slope':  '8_slp_median', 
+        'Soil Organic Carbon': '9_SOCmean_median',
+        'Soil pH':  '10_pHmean_median',
+        'Soil CEC': '11_CECmean_median',
+        'Soil Nitrogen':'12_Nmean_median',
+        'Soil Clay': '13_claymean_median',         
+        'Soil Sand': '14_sandmean_median'
     }
 
     # Filtering out properties not in the selected variables list
@@ -552,7 +677,7 @@ def get_x(training, selected_variables):
     return (x)
 
 
-def get_res_xmeans(training, selected_variables, x):
+def get_res_xmeans(bb,training, selected_variables, x):
     # Rescale values between 0-1
     def rescale(img):
         mm = img.reduceRegion(reducer=ee.Reducer.minMax(), bestEffort=True, geometry=bb)
@@ -580,7 +705,14 @@ def get_res_xmeans(training, selected_variables, x):
         'Temperature Minimum': '4_tminMin_median',
         'Temperature Mean': '5_tmeanMean_median',
         'Soil Zinc': '6_zinc_median',
-        'Elevation': '7_srtm_median'
+        'Elevation': '7_srtm_median',
+        'Slope':  '8_slp_median', 
+        'Soil Organic Carbon': '9_SOCmean_median',
+        'Soil pH':  '10_pHmean_median',
+        'Soil CEC': '11_CECmean_median',
+        'Soil Nitrogen':'12_Nmean_median',
+        'Soil Clay': '13_claymean_median',         
+        'Soil Sand': '14_sandmean_median'
     }
 
     # Filtering out properties not in the selected variables list
@@ -601,8 +733,23 @@ def get_res_xmeans(training, selected_variables, x):
 
     # // Cluster the input using the trained clusterer.
     res = x.cluster(clusterer)
+    nClusters = res.select('cluster');
 
-    return (res)
+    # Calculate distinct clusters within the defined geometry
+    frequency = nClusters.reduceRegion(
+        reducer=ee.Reducer.frequencyHistogram(),
+        geometry=bb,
+        scale=1000  # Replace with appropriate scale for your data
+    )
+
+    # Extract the histogram dictionary and count distinct clusters
+
+    histogram = ee.Dictionary(frequency.get('cluster'))
+    keys = histogram.keys()
+    distinct_clusters_count = keys.length()
+    return (res,distinct_clusters_count)
+
+    #return (res)
 
 
 def get_numClusters(bb, training, selected_variables, x):
@@ -633,7 +780,14 @@ def get_numClusters(bb, training, selected_variables, x):
         'Temperature Minimum': '4_tminMin_median',
         'Temperature Mean': '5_tmeanMean_median',
         'Soil Zinc': '6_zinc_median',
-        'Elevation': '7_srtm_median'
+        'Elevation': '7_srtm_median',
+        'Slope':  '8_slp_median', 
+        'Soil Organic Carbon': '9_SOCmean_median',
+        'Soil pH':  '10_pHmean_median',
+        'Soil CEC': '11_CECmean_median',
+        'Soil Nitrogen':'12_Nmean_median',
+        'Soil Clay': '13_claymean_median',         
+        'Soil Sand': '14_sandmean_median'
     }
 
     # Filtering out properties not in the selected variables list
@@ -701,7 +855,14 @@ def get_res_kmeans(training, selected_variables, cluster_selection, x):
         'Temperature Minimum': '4_tminMin_median',
         'Temperature Mean': '5_tmeanMean_median',
         'Soil Zinc': '6_zinc_median',
-        'Elevation': '7_srtm_median'
+        'Elevation': '7_srtm_median',
+        'Slope':  '8_slp_median', 
+        'Soil Organic Carbon': '9_SOCmean_median',
+        'Soil pH':  '10_pHmean_median',
+        'Soil CEC': '11_CECmean_median',
+        'Soil Nitrogen':'12_Nmean_median',
+        'Soil Clay': '13_claymean_median',         
+        'Soil Sand': '14_sandmean_median'
     }
 
     # Filtering out properties not in the selected variables list
@@ -718,7 +879,7 @@ def get_res_kmeans(training, selected_variables, cluster_selection, x):
     return (res)
 
 
-def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMax, tminMin, tmeanMean, zinc, srtm):
+def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMax, tminMin, tmeanMean, zinc, srtm,slp,SOCmean,pHmean,CECmean,Nmean,claymean,sandmean):
     out = str(".")
 
     # Rescale values between 0-1
@@ -746,6 +907,7 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
     )
 
     fcks = zMed(stack, cks)
+    
 
     fcksStyles = ee.Dictionary({
         0: {'color': '0e6626', 'fillColor': '0e662688'},
@@ -794,24 +956,24 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
         tminMin.reproject(crs='EPSG:4326', scale=1000).rename('TemperatureMin'),
 
         tmeanMean.reproject(crs='EPSG:4326', scale=1000).rename('TemperatureMean'),
-
-        # // SOCmean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilCarbon'),
-
-        # // pHmean.reproject(crs= 'EPSG:4326', scale=1000).rename('SoilpH'),
-
-        # // CECmean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilCEC'),
-
-        # // Nmean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilNitrogen'),
-
+        
         zinc.reproject(crs='EPSG:4326', scale=1000).rename('SoilZinc'),
 
-        # // claymean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilClay'),
+        srtm.reproject(crs='EPSG:4326', scale=1000).rename('Elevation'),
 
-        # // sandmean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilSand'),
+        slp.reproject(crs= 'EPSG:4326', scale= 1000).rename('Slope'),
 
-        srtm.reproject(crs='EPSG:4326', scale=1000).rename('Elevation')
+        SOCmean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilCarbon'),
 
-        # // slp.reproject(crs= 'EPSG:4326', scale= 1000).rename('Slope'),
+        pHmean.reproject(crs= 'EPSG:4326', scale=1000).rename('SoilpH'),
+
+        CECmean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilCEC'),
+
+        Nmean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilNitrogen'),        
+
+        claymean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilClay'),
+
+        sandmean.reproject(crs= 'EPSG:4326', scale= 1000).rename('SoilSand'),
 
         # // relh.reproject(crs= 'EPSG:4326', scale= 1000).rename('RelativeHumidity')
     ])
@@ -825,7 +987,14 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
         'Temperature Minimum': '4_TemperatureMin',
         'Temperature Mean': '5_TemperatureMean',
         'Soil Zinc': "6_SoilZinc",
-        'Elevation': '7_Elevation'
+        'Elevation': '7_Elevation',
+        'Slope':  '8_Slope', 
+        'Soil Organic Carbon': '9_SoilCarbon',
+        'Soil pH':  '10_SoilpH',
+        'Soil CEC': '11_SoilCEC',
+        'Soil Nitrogen':'12_SoilNitrogen',
+        'Soil Clay': '13_SoilClay',         
+        'Soil Sand': '14_SoilSand'
     }
 
     # Filtering out properties not in the selected variables list
@@ -856,6 +1025,7 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
         # Create feature with selected aggregated properties
         f = ee.Feature(tempFC.geometry(), {
             'cluster': ee.Number(prop),
+            'cAreaHa': ee.Number.expression('x/y', {'x': tempFC.geometry().area(maxError=1), 'y': 10000}),
             'trials': ee.Number.expression('(x/y)*100', {
                 'x': ee.Number.expression('x/y', {'x': tempFC.geometry().area(maxError=1), 'y': 10000}),
                 'y': totAreaHa
@@ -866,6 +1036,16 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
         return f
 
     outDiss = ee.FeatureCollection(outProps.map(lambda prop: propfn(prop, selected_properties)))
+
+    def outDissfn(feature):
+        return feature.set('style', fcksStyles.get(feature.get('cluster')))
+        
+    outDisss = ee.FeatureCollection(outDiss).map(outDissfn)
+    
+    #Style the FeatureCollection according to each feature's "style" property.
+    outDissVisCustom = outDisss.style(
+        styleProperty= 'style'
+    )
     return (outDiss)
 
 # .filter(ee.Filter.date(sdate, edate))

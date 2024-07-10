@@ -14,6 +14,9 @@ from plotly.subplots import make_subplots
 from PIL import Image
 import math
 import io
+import re
+import random
+import pandas as pd
 from eefun import *
 
 # # # # Need to refresh token every week
@@ -31,21 +34,12 @@ st.header(":green[Sampling Framework]")
 
 crops = ["Maize", "Potato", "Cassava","Rice", "Wheat", "Soybean", "Teff", "Sorghum" ]
 varlist = ['Rainfall Total', 'Rainfall Days','Rainfall Average','Temperature Maximum',
-            'Temperature Minimum','Temperature Mean','Soil Zinc', 'Elevation']
+            'Temperature Minimum','Temperature Mean','Soil Zinc', 'Elevation','Slope', 'Soil Organic Carbon','Soil pH','Soil CEC','Soil Nitrogen','Soil Clay','Soil Sand']
 cropmask = ee.Image('COPERNICUS/Landcover/100m/Proba-V-C3/Global/2019').select('discrete_classification').eq(40)
 
 
 
 Map = geemap.Map(center=[0, 0], zoom=2, Draw_export=True)
-
-# Initialize variables
-show_clusters = False
-downloaderr_input  = False
-proces_input =False
-show_process2 = True
-cluster_selection = 1
-var_selection = False
-selected_variables = []
 
 # Load CSS file content
 with open('style.css', 'r') as css_file:
@@ -54,20 +48,27 @@ with open('style.css', 'r') as css_file:
 # Apply CSS styles
 st.markdown(f'<style>{css_content}</style>', unsafe_allow_html=True)
 
+session_state = st.session_state
+# Initialize variables
+session_state.GenerateLink1 = False
+session_state.GenerateLink2  = False
+session_state.revisionLink =False
+session_state.data = None
+selected_variables = []
 
 with st.sidebar:    
     st.image(logo)
-        
+    # st.experimental_rerun()
     st.write("## Upload AOI :gear:")
     data = st.file_uploader("Upload AOI Shapefile", type=["geojson","zip"])
-    
+       
     if data is not None:
         st.write("## Select Crop and Date: ")
         selected_Crop = st.sidebar.selectbox("Crop", crops)
         selected_Sdate = st.sidebar.date_input("Start",(datetime.date.today() - datetime.timedelta(days=10*365)))
         selected_Edate = st.sidebar.date_input("End")
-               
-tab1, tab2 = st.tabs([":orange[The App]", ":orange[How It Works]"])
+   
+tab1, tab2, tab3 = st.tabs([":orange[The App]", ":orange[How It Works]", ":orange[Data and Sources]"])
 
 with tab2:
     #st.write("How It Works") 
@@ -78,7 +79,17 @@ with tab2:
     # Display HTML content
     st.markdown(html_content, unsafe_allow_html=True)
 
-with tab1:
+with tab3:
+    #st.write("How It Works") 
+    # Read HTML file
+    with open('datasets.html', 'r') as file:
+        html_content = file.read()
+
+    # Display HTML content
+    st.markdown(html_content, unsafe_allow_html=True)
+
+
+with tab1:    
     if data is not None:
         try:
             file_path = save_uploaded_aoi(data, data.name)
@@ -104,8 +115,8 @@ with tab1:
             Map = geemap.Map(center=centroid_coords, zoom=8)
             Map.add_gdf(poly,  'AOI') 
             #Map.addLayer(bb, {}, 'Bounding Box')
-            selected_Sdate1 = (datetime.date.today() - datetime.timedelta(days=5*365))
-            selected_Edate1 = datetime.date.today()
+            selected_Sdate1 = (datetime.date.today() - datetime.timedelta(days=10*365))
+            selected_Edate1 = datetime.date.today() - datetime.timedelta(days=1*365)
     
             sdate = ee.Date.fromYMD(int(selected_Sdate1.strftime("%Y")),
                                 int(selected_Sdate1.strftime("%-m")),
@@ -116,13 +127,13 @@ with tab1:
     
             #reccommended agronomic variables as per crop
             if selected_Crop == "Maize":
-                selected_variables=varlist
+                selected_variables=varlist[0:8]
             elif selected_Crop == "Potato":
                 selected_variables=varlist[0:5]
             elif selected_Crop == "Beans":
                 selected_variables=varlist[2:7]
             else:
-                selected_variables=varlist
+                selected_variables=varlist[0:6]
             
             #functions : data processing
             #load covariables
@@ -134,21 +145,69 @@ with tab1:
             tmeanMean = tmeanMean(selected_Sdate, selected_Edate,sdate, edate,bb)
             zinc = zinc(bb)
             srtm = srtm(bb)
+            slp=slp(bb)
+            SOCmean=SOCmean(bb)
+            pHmean=pHmean(bb)
+            CECmean=CECmean(bb)
+            Nmean=Nmean(bb)
+            claymean=claymean(bb)
+            sandmean=sandmean(bb)
             #Landscape Segmentation
             vectors = vectors(bb,selected_Sdate,selected_Edate,sdate,edate)
             # generate stack, training data
-            stack = stackk(bb,selected_Sdate,selected_Edate,sdate,edate,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
-            training = get_training(bb,vectors,selected_variables,prcSum,  prcNrd, Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
+            stack = stackk(bb,selected_Sdate,selected_Edate,sdate,edate,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)
+            training = get_training(bb,vectors,selected_variables,prcSum,  prcNrd, Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)
             x = get_x(training,selected_variables)
             
             #generate cluster output
-            res = get_res_xmeans(training,selected_variables,x)
+            res,numClusters = get_res_xmeans(bb,training,selected_variables,x)
     
             #clip final ouput to aoi shape... otherwise expensive comp
             bb_clip = mapping(poly.geometry.unary_union)
-            res = res.clip(bb_clip)        
-    
-            Map.addLayer (res.randomVisualizer(), {}, 'Xmeans')  
+            res = res.clip(bb_clip)   
+
+            numClusters = numClusters.getInfo()
+
+            def gen_colors(num_colors):
+                random.seed(0) #ensure reproducibility
+                random_colors = []
+                for _ in range(num_colors):
+                    color = '#' + ''.join([format(random.randint(0,255),'02x')for _ in range(3)])
+                    random_colors.append(color)
+                return random_colors
+                #"#{:06x}".format(random.randint(0,0xFFFFFF))
+            
+            palette = gen_colors(numClusters)
+
+            cluster_indices = list(range(numClusters))
+
+            style_res = {
+                'bands': 'cluster',
+                'min' :0,
+                'max': numClusters - 1,
+                'palette' : palette
+            }
+           
+
+            Map.addLayer (res, style_res, 'Xmeans') 
+            # Create a feature collection where each feature gets a cluster property
+            outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)
+            Map.addLayer (outDiss, {}, 'Feature Xmeans')
+           #  st.write(outDiss.getInfo())                       
+            Map.add_labels(
+                outDiss,
+                "cluster",
+                font_size="12pt",
+                font_color="black",
+                font_family="arial",
+                font_weight="bold"
+                )
+                    # def on_hover (feature, **kwargs):
+            #     cluster=feature.get
+
+
+        
+            
         except Exception as e:
             st.error(e)
             #st.error("An error occurred: Try again. Ensure the AOI geometry is a polygon or rectangle. Very large or very small regions might not be processed either")
@@ -156,16 +215,30 @@ with tab1:
         try:
             st.sidebar.write("## Download: ")
             st.sidebar.markdown("Are you satisfied with the results? If yes, generate link below and Click 'Get Results' to download the results of unsupervised optimized clustering for use." )
+            GenerateLink1 = st.sidebar.checkbox("Yes, Generate Download Link.")
 
-            if st.sidebar.checkbox("Generate Download Link."):
-                outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
+            if GenerateLink1:
+               #  outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srt, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmeanm)
+               
+                # def style_features(feature):
+                #     cluster_value = feature.get('cluster')
+                #     return feature.set('style',{
+                #         'color':palette[cluster_value],
+                #         'width': 2,
+                #         'fillcolor': palette[cluster_value],
+                #         'fillOpacity': 0.5,
+                #     })
+
+                # styled_outDiss = outDiss.map(style_features)
+                #Map.addLayer (styled_outDiss, {}, 'styled')           
+                
                 st.sidebar.write("Click below to download file")
                 current_time = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                 gcs_path = f'data_{current_time}'
                 task = ee.batch.Export.table.toCloudStorage(
                     collection=outDiss,
                     description='Export KML to GCS',
-                    bucket='eia2030',  # specify the name of your GCS bucket
+                    bucket='sfapp-eia',  # specify the name of your GCS bucket
                     fileNamePrefix = gcs_path,
                     fileFormat='KML'
                 )     
@@ -183,16 +256,16 @@ with tab1:
                         blob.download_to_filename(destination_path)
                         return destination_path
                         
-                    data_path = download_from_gcs('eia2030', f'{gcs_path}.kml', "/tmp/f'{gcs_path}.kml'") 
+                    data_path = download_from_gcs('sfapp-eia', f'{gcs_path}.kml', "/tmp/f'{gcs_path}.kml'") 
                     def download_file(file_path):
                         with open(file_path, 'rb') as f:
                              kml_data = f.read()
                         return kml_data
-                    download_data=download_file(data_path)
+                    kml_data=download_file(data_path)                    
                     
                     st.sidebar.download_button(
                         label='Get Results',
-                        data= download_data,
+                        data= kml_data,
                         file_name=f'Data_{selected_Crop}_{current_time}.kml',
                         mime='application/kml'
                     )
@@ -206,170 +279,189 @@ with tab1:
         
 
         try:
-            # numClusters = outDiss.size()
-            numClusters = get_numClusters(bb,training,selected_variables,x)     
-            #st.write(numClusters.getInfo())
-            numClusters = numClusters.getInfo()
-            cluster_options =list(range( 1, 101))
-            if numClusters in cluster_options:
-                cluster_options.remove(numClusters)
-            cluster_options= [numClusters]+ cluster_options
-            
-            st.sidebar.write("## Considering a revision of the clustering: modify variables and/or the number of clusters ")
-            variable_modification_options = st.sidebar.checkbox("Modify Variables", key="variable_modification")
-            if variable_modification_options:
-                selected_variables = st.sidebar.multiselect('Current Variables', varlist, default = selected_variables)
-            if not variable_modification_options:
-                #display default variables 
-                v = str(selected_variables)
-                var_clean_list = ", ".join(selected_variables)
-                st.sidebar.write("Variables: ", var_clean_list)              
-    
-            cluster_modification_options = st.sidebar.checkbox("Modify Clusters", key="cluster_modification")        
-            if not cluster_modification_options:
-                cluster_list = st.sidebar.write("Current Clusters: Optimal number of clusters used")
-            if cluster_modification_options:
-                cluster_selection = st.sidebar.selectbox('Clusters', cluster_options,index=0)
+            revisionLink = st.sidebar.checkbox("No, Considering a revision of the clustering.")
+            if revisionLink:
+                # numClusters = outDiss.size()
+               # #numClusters = get_numClusters(bb,training,selected_variables,x)     
+                #st.write(numClusters.getInfo())
+               #  numClusters = numClusters.getInfo()
+                cluster_options =list(range( 1, 101))
+                if numClusters in cluster_options:
+                    cluster_options.remove(numClusters)
+                cluster_options= [numClusters]+ cluster_options
                 
-    
-                	
+                st.sidebar.write("## Considering a revision of the clustering: modify variables and/or the number of clusters ")
+                variable_modification_options = st.sidebar.checkbox("Modify Variables", key="variable_modification")
+                if variable_modification_options:
+                    selected_variables = st.sidebar.multiselect('Current Variables', varlist, default = selected_variables)
+                if not variable_modification_options:
+                    #display default variables 
+                    v = str(selected_variables)
+                    var_clean_list = ", ".join(selected_variables)
+                    st.sidebar.write("Variables: ", var_clean_list)              
+        
+                cluster_modification_options = st.sidebar.checkbox("Modify Clusters", key="cluster_modification")        
+                if not cluster_modification_options:
+                    cluster_list = st.sidebar.write("Current Clusters: Optimal number of clusters used")
+                    cluster_selection =numClusters
+                if cluster_modification_options:
+                    cluster_selection = st.sidebar.selectbox('Clusters', cluster_options,index=0)
 
-        except Exception as e:
-            st.error(e)
-            #st.error("An error occurred: Please try again. ")
-        
             
-       
-        try:
-            if variable_modification_options or cluster_modification_options:
-                res = get_res_kmeans(training,selected_variables,cluster_selection,x)
-                res = res.clip(bb_clip)
-        
-                Map.addLayer (res.randomVisualizer(), {}, 'Kmeans')
+                if variable_modification_options or cluster_modification_options:
+                    res = get_res_kmeans(training,selected_variables,cluster_selection,x)
+                    res = res.clip(bb_clip)
             
-                st.sidebar.write("## Download: ")
-                st.sidebar.markdown("Are you satisfied with the results? If yes, generate link below and Click 'Get Results' to download the results of the modified clustering for use." )
+                    Map.addLayer (res.randomVisualizer(), {}, 'Kmeans')    
+               # Create a feature collection where each feature gets a cluster property
+                    outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srt, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmeanm)
+                   #  Map.addLayer (outDiss, {}, 'Feature Kmeans')                   
+                    Map.add_labels(
+                        outDiss,
+                        "cluster",
+                        font_size="12pt",
+                        font_color="black",
+                        font_family="arial",
+                        font_weight="bold"
+                     )
+
+                    
+
+                     
+                    st.sidebar.write("## Download: ")
+                    st.sidebar.markdown("Are you satisfied with the results? If yes, generate link below and Click 'Get Results' to download the results of the modified clustering for use." )
+                    GenerateLink2 = st.sidebar.checkbox("Generate Download Link2")
+                                    
+                    if GenerateLink2:
+                       #  outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srt, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmeanm)
+                        st.sidebar.write("Click below to download the results of the modified clustering")
+                        current_time = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                        gcs_path = f'data_{current_time}'
+                        task = ee.batch.Export.table.toCloudStorage(
+                            collection=outDiss,
+                            description='Export KML to GCS',
+                            bucket='sfapp-eia',  # specify the name of your GCS bucket
+                            fileNamePrefix = gcs_path,
+                            fileFormat='KML'
+                        )     
+                        task.start()
+                        while task.active():
+                            pass  
+                        #Get the export task status
+                        status = task.status()['state'] 
+                        if status == 'COMPLETED':
+                            # Function to download file from GCS
+                            def download_from_gcs(bucket_name, file_path, destination_path):
+                                storage_client = storage.Client()
+                                bucket = storage_client.bucket(bucket_name)
+                                blob = bucket.blob(file_path)
+                                blob.download_to_filename(destination_path)
+                                return destination_path
                                 
-                if st.sidebar.checkbox("Generate Download Link"):
-                    outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm)
-                    st.sidebar.write("Click below to download file")
-                    current_time2 = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                    gcs_path2 = f'data_{current_time2}'
-                    task = ee.batch.Export.table.toCloudStorage(
-                        collection=outDiss,
-                        description='Export KML to GCS',
-                        bucket='eia2030',  # specify the name of your GCS bucket
-                        fileNamePrefix = gcs_path2,
-                        fileFormat='KML'
-                    )     
-                    task.start()
-                    while task.active():
-                        pass  
-                    #Get the export task status
-                    status = task.status()['state'] 
-                    if status == 'COMPLETED':
-                        # Function to download file from GCS
-                        def download_from_gcs(bucket_name, file_path, destination_path):
-                            storage_client = storage.Client()
-                            bucket = storage_client.bucket(bucket_name)
-                            blob = bucket.blob(file_path)
-                            blob.download_to_filename(destination_path)
-                            return destination_path
+                            data_path = download_from_gcs('sfapp-eia', f'{gcs_path}.kml', "/tmp/f'{gcs_path}.kml'") 
+                            def download_file(file_path):
+                                with open(file_path, 'rb') as f:
+                                     kml_data = f.read()
+                                return kml_data
+                            kml_data=download_file(data_path)
+
                             
-                        data_path2 = download_from_gcs('eia2030', f'{gcs_path2}.kml', "/tmp/f'{gcs_path2}.kml'") 
-                        def download_file(file_path):
-                            with open(file_path, 'rb') as f:
-                                 kml_data = f.read()
-                            return kml_data
-                        download_data=download_file(data_path2)
-                        
-                        st.sidebar.download_button(
-                            label='Get Resultss',
-                            data= download_data,
-                            file_name=f'Data_{selected_Crop}_{current_time2}.kml',
-                            mime='application/kml'
-                        )
+                                
+                            st.sidebar.download_button(
+                                label='Get Results2',
+                                data= kml_data,
+                                file_name=f'Data_{selected_Crop}_{current_time}.kml',
+                                mime='application/kml'
+                            )
         except Exception as e:
             st.error(e)
             # st.error("An error occurred: There is an issue with your file download. Try again")   
 
     Map.to_streamlit(height=600)
 
+# )
 with tab1:
-    if data is not None:
-        #st.markdown("#### Distribution of the Variables ")
+    if data is not None:   
+        st.markdown('<h4 style="color: rgb(69,45,34);">Clusters Details</h4>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#333;">The table below shows the different clusters generated with corresponding trial numbers to be allocated and the area of each cluster. </p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#333;">Hint: Click on the column name to sort values in ascending or descending order. The download button appears on hover on the right corner of the table and can be used to download table data as .csv </p>', unsafe_allow_html=True)
+        outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)
+        cluster_data = outDiss.getInfo()
+        trial_data=[]
+        for feature in cluster_data['features']:
+            cluster_id =feature['properties']['cluster']
+            trials =feature['properties']['trials']
+            area = feature['properties']['cAreaHa']
+            trial_data.append({'Cluster ID':cluster_id, 'Trials': trials, 'Area (Ha)':area})
+
+        # df_trial_data= pd.DataFrame(trial_data, index= None)
+        # df_trial_data = df_trial_data.sort_values('Cluster ID')
+        # df_trial_data = df_trial_data.iloc[:,1:4]
+            
+        st.dataframe(data=trial_data, use_container_width=True)
+
+
+with tab1:
+    if data is not None:         
         st.markdown('<h4 style="color: rgb(69,45,34);">Distribution of the Variables</h4>', unsafe_allow_html=True)
-        st.markdown('<p style= "color:#333;">The boxplots depicted below offer a visual snapshot of the distribution characteristics of the variables within the designated area of interest (AOI). The intricate details captured in these graphical representations provide insights into the central tendency, dispersion, and potential outliers within the dataset, aiding in a more nuanced understanding of the underlying data dynamics. Generating these boxplots may require additional computational time, especially when dealing with larger AOIs.</p>', unsafe_allow_html=True)
-        # try:
-        #bb_clip = ee.Geometry.Polygon(bb_clip.geometry().bounds())
-        # bb_shp = ee.Geometry.Rectangle([xmin, ymin, xmax, ymax])
-        # aoi_area = bb_shp.area().getInfo()   
-               
+        st.markdown('<p style="color:#333;">The boxplots depicted below offer a visual snapshot of the distribution characteristics of the variables within the designated area of interest (AOI). The intricate details captured in these graphical representations provide insights into the central tendency, dispersion, and potential outliers within the dataset, aiding in a more nuanced understanding of the underlying data dynamics. Generating these boxplots may require additional computational time, especially when dealing with larger AOIs.</p>', unsafe_allow_html=True)
+        st.markdown('<p style="color:#333;">Note: Please check the variability of data in the box plot. For instance, if there are only one or two values of the variable across the region, the box plot may appear as a line. If there is no data at all for a particular variable, no box plot will be displayed. You can adjust the variables accordingly based on this information.</p>', unsafe_allow_html=True) 
         properties_mapping = {
-            'Rainfall Total': 'prcSum',
-            'Rainfall Days': 'prcNrd',
-            'Rainfall Average': 'Di',
-            'Temperature Maximum': 'tmaxMax',
-            'Temperature Minimum': 'tminMin',
-            'Temperature Mean': 'tmeanMean',
-            'Soil Zinc': 'zinc',
-            'Elevation': 'srtm'
-            }
-        i_variables = [properties_mapping[var] for var in selected_variables if var in properties_mapping]
-
-
-        # Function to generate boxplot as bytes
+            'Rainfall Total': {'property': 'prcSum', 'unit': 'mm'},
+            'Rainfall Days': {'property': 'prcNrd', 'unit': 'days'},
+            'Rainfall Average': {'property': 'Di', 'unit': 'mm/day'},
+            'Temperature Maximum': {'property': 'tmaxMax', 'unit': '°C'},
+            'Temperature Minimum': {'property': 'tminMin', 'unit': '°C'},
+            'Temperature Mean': {'property': 'tmeanMean', 'unit': '°C'},
+            'Soil Zinc': {'property': 'zinc', 'unit':' ppmg'},
+            'Elevation': {'property': 'srtm', 'unit': 'm'},
+            'Slope': {'property': 'slp', 'unit': '%'},
+            'Soil Organic Carbon': {'property': 'SOCmean', 'unit': 'dg/kg'},
+            'Soil pH': {'property': 'pHmean', 'unit': ' '},
+            'Soil CEC': {'property': 'CECmean', 'unit': 'mmol©/kg'},
+            'Soil Nitrogen': {'property': 'Nmean', 'unit': 'g/kg'},
+            'Soil Clay': {'property': 'claymean', 'unit': 'g/kg'} ,         
+            'Soil Sand': {'property': 'sandmean', 'unit': 'g/kg'}  
+        }   
+       
+  
+        selected_variabless = [var for var in selected_variables if var in properties_mapping] 
+       #  selected_variabless = list(properties_mapping.keys())  # Example selected variables          
+   #  st.write(selected_variables) 
+        # Function to generate boxplot data
         def generate_boxplot(var_name):
-            # Get property name from mapping
-            varInd = properties_mapping.get(var_name)
-            if varInd:  # Check if property exists
-                varInd = globals()[varInd]
-                # Clip image to region of interest (if needed)
-                dta = varInd.clip(bb_clip)
-                
-                # # Get the nominal scale of the projection
-                # scale = dta.projection().nominalScale().getInfo()
-                # scale_value = math.sqrt(aoi_area) / scale   
-                # scale_value = min(scale_value, 1000)  # Adjust maximum scale value as needed
-                # Sample the image data
-                #data = dta.sample(scale=scale_value, factor=0.4, region=bb_clip)
-                data = dta.sample(numPixels=5000, region=bb_clip)
-                values = data.aggregate_array(dta.bandNames().getInfo()[0]).getInfo()  # Aggregate values
-                #fig = go.Figure(data=[go.Box(y=values)])
-                return values
-                # # Plot boxplot
-                # fig, ax = plt.subplots(figsize=(8, 6))
-                # ax.boxplot(values)
-                # ax.set_title(var_name)  # Add title with variable name
-                                    
-                # # Convert plot to bytes
-                # buf = io.BytesIO()
-                # plt.savefig(buf, format='png')
-                # plt.close(fig)
-                # buf.seek(0)
-                # return buf.getvalue()
-            else:
-                return None
-        # Calculate number of rows and columns for subplot layout
-        num_variables = len(selected_variables)
-        num_cols = 3  # Number of columns
-        num_rows = math.ceil(num_variables / num_cols)  # Number of rows
+            mapping = properties_mapping.get(var_name)
+            if mapping:
+                varInd = globals().get(mapping['property'])
+                if varInd:
+                    dta = varInd.clip(bb_clip)
+                    data = dta.sample(numPixels=5000, region=bb_clip)
+                    values = data.aggregate_array(dta.bandNames().getInfo()[0]).getInfo()
+                    return values, mapping['unit']
+            return None, None
+    
+        # Prepare subplot layout
+        num_variables = len(selected_variabless)
+        num_cols = 3
+        num_rows = math.ceil(num_variables / num_cols)
+       #  st.write(selected_variables)
 
-        fig = make_subplots(rows=int(num_variables/3)+1, cols=3)
-
-        for i, var_name in enumerate(selected_variables):
+         
+        fig = make_subplots(rows=num_rows, cols=num_cols)         
+        for i, var_name in enumerate(selected_variabless):
             if i < num_variables:
-                var_name = selected_variables[i]
-                plot_bytes = generate_boxplot(var_name)
-                if plot_bytes:
-                    fig.add_trace(go.Box(y=plot_bytes, name=f"{var_name}", boxmean='sd'),
-                          row=int(i/3)+1, col=i%3+1)
-                    #fig.update_xaxes(title_text=var_name, row=int(i/3)+1, col=i%3+1)
-                    fig.update_yaxes(title_text="Values", row=int(i/3)+1, col=i%3+1)
-
-        # Update layout
-        fig.update_layout(height=1500, width=1000, title_text="Boxplots of Selected Variables",showlegend=False)
-        
-        # Display the plot
+                values, unit = generate_boxplot(var_name)
+                if values:
+                    fig.add_trace(go.Box(y=values, name=f"{var_name}", boxmean='sd'),
+                                  row=int(i / num_cols) + 1, col=i % num_cols + 1)
+                    fig.update_yaxes(title_text=f"Values ({unit})", row=int(i / num_cols) + 1, col=i % num_cols + 1)
+                else:
+                    fig.add_trace(go.Box(y=[], name=f"{var_name}", boxmean='sd'),
+                                  row=int(i / num_cols) + 1, col=i % num_cols + 1)
+                    fig.update_yaxes(title_text="No data", row=int(i / num_cols) + 1, col=i % num_cols + 1)
+                    fig.update_xaxes(title_text=f"{var_name}", row=int(i / num_cols) + 1, col=i % num_cols + 1)
+    
+        # Update layout and display plot
+        fig.update_layout(height=1500, width=1000, title_text="Boxplots of Selected Variables", showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
