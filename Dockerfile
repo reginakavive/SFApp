@@ -52,7 +52,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.c
 ENV PATH="/usr/lib/google-cloud-sdk/bin:${PATH}"
 
 # Set the Google Application Credentials environment variable
-ENV GOOGLE_APPLICATION_CREDENTIALS="/var/secrets/google/midyear-button-379815-391083128e1a.json"
+ENV GOOGLE_APPLICATION_CREDENTIALS="/var/secrets/google/sampling-frames-iita-a80b3e765388.json"
 
 
 # Copy the working directory contents from the base stage
