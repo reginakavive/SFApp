@@ -881,25 +881,25 @@ def get_res_kmeans(training, selected_variables, cluster_selection, x):
 
 
 def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMax, tminMin, tmeanMean, zinc, srtm,slp,SOCmean,pHmean,CECmean,Nmean,claymean,sandmean):
-    out = str(".")
+    # out = str(".")
 
-    # Rescale values between 0-1
-    def rescale(img):
-        mm = img.reduceRegion(reducer=ee.Reducer.minMax(), bestEffort=True, geometry=bb)
-        mM = mm.rename(mm.keys(), ['max', 'min'])
-        return mM
+    # # Rescale values between 0-1
+    # def rescale(img):
+    #     mm = img.reduceRegion(reducer=ee.Reducer.minMax(), bestEffort=True, geometry=bb)
+    #     mM = mm.rename(mm.keys(), ['max', 'min'])
+    #     return mM
 
-    def clipbb(image):
-        return image.clip(bb)
+    # def clipbb(image):
+    #     return image.clip(bb)
 
-    def calcNDVI(image):
-        scaled = image.unitScale(ee.Number(rescale(image).values().get(1)),
-                                 rescale(image).values().get(0)).toFloat().rename('NDVI').clip(bb)
-        return scaled
+    # def calcNDVI(image):
+    #     scaled = image.unitScale(ee.Number(rescale(image).values().get(1)),
+    #                              rescale(image).values().get(0)).toFloat().rename('NDVI').clip(bb)
+    #     return scaled
 
-    def sStackF(image):
-        i = image.mask(cropmask).clip(bb)
-        return i
+    # def sStackF(image):
+    #     i = image.mask(cropmask).clip(bb)
+    #     return i
 
     cks = res.reduceToVectors(
         geometryType='polygon',
@@ -910,39 +910,39 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
     fcks = zMed(stack, cks)
     
 
-    fcksStyles = ee.Dictionary({
-        0: {'color': '0e6626', 'fillColor': '0e662688'},
-        1: {'color': 'de6c52', 'fillColor': 'de6c5288'},
-        2: {'color': '645ff5', 'fillColor': '645ff588'},
-        3: {'color': 'a63393', 'fillColor': 'a6339388'},
-        4: {'color': 'f5f10c', 'fillColor': 'f5f10c88'},
-        5: {'color': '4ecf2d', 'fillColor': '4ecf2d88'},
-        6: {'color': '89d699', 'fillColor': '89d69988'},
-        7: {'color': 'edbc34', 'fillColor': 'edbc3488'},
-        8: {'color': 'd4857f', 'fillColor': 'd4857f88'},
-        9: {'color': '6dbd7b', 'fillColor': '6dbd7b88'},
-        10: {'color': '112fc2', 'fillColor': '112fc288'},
-        11: {'color': 'ab6e68', 'fillColor': 'ab6e6888'},
-        12: {'color': 'a1f73e', 'fillColor': 'a1f73e88'},
-        13: {'color': '73f5f0', 'fillColor': '73f5f088'},
-        14: {'color': '933cc9', 'fillColor': '933cc988'},
-        15: {'color': 'd263e0', 'fillColor': 'd263e088'},
-        16: {'color': '42468c', 'fillColor': '42468c88'},
-        17: {'color': 'bf2608', 'fillColor': 'bf260888'},
-        18: {'color': '56a391', 'fillColor': '56a39188'},
-        19: {'color': 'a9a7e8', 'fillColor': 'a9a7e888'}
-    })
+    # fcksStyles = ee.Dictionary({
+    #     0: {'color': '0e6626', 'fillColor': '0e662688'},
+    #     1: {'color': 'de6c52', 'fillColor': 'de6c5288'},
+    #     2: {'color': '645ff5', 'fillColor': '645ff588'},
+    #     3: {'color': 'a63393', 'fillColor': 'a6339388'},
+    #     4: {'color': 'f5f10c', 'fillColor': 'f5f10c88'},
+    #     5: {'color': '4ecf2d', 'fillColor': '4ecf2d88'},
+    #     6: {'color': '89d699', 'fillColor': '89d69988'},
+    #     7: {'color': 'edbc34', 'fillColor': 'edbc3488'},
+    #     8: {'color': 'd4857f', 'fillColor': 'd4857f88'},
+    #     9: {'color': '6dbd7b', 'fillColor': '6dbd7b88'},
+    #     10: {'color': '112fc2', 'fillColor': '112fc288'},
+    #     11: {'color': 'ab6e68', 'fillColor': 'ab6e6888'},
+    #     12: {'color': 'a1f73e', 'fillColor': 'a1f73e88'},
+    #     13: {'color': '73f5f0', 'fillColor': '73f5f088'},
+    #     14: {'color': '933cc9', 'fillColor': '933cc988'},
+    #     15: {'color': 'd263e0', 'fillColor': 'd263e088'},
+    #     16: {'color': '42468c', 'fillColor': '42468c88'},
+    #     17: {'color': 'bf2608', 'fillColor': 'bf260888'},
+    #     18: {'color': '56a391', 'fillColor': '56a39188'},
+    #     19: {'color': 'a9a7e8', 'fillColor': 'a9a7e888'}
+    # })
 
-    # // Add feature-specific style properties to each feature based on fuel type.
-    def fcksfn(feature):
-        return feature.set('style', fcksStyles.get(feature.get('label')))
+    # # // Add feature-specific style properties to each feature based on fuel type.
+    # def fcksfn(feature):
+    #     return feature.set('style', fcksStyles.get(feature.get('label')))
 
-    fcks = ee.FeatureCollection(fcks).map(fcksfn)
+    # fcks = ee.FeatureCollection(fcks).map(fcksfn)
 
-    # // Style the FeatureCollection according to each feature's "style" property.
-    fcksVisCustom = fcks.style(
-        styleProperty='style'
-    )
+    # # // Style the FeatureCollection according to each feature's "style" property.
+    # fcksVisCustom = fcks.style(
+    #     styleProperty='style'
+    # )
 
     data = ee.ImageCollection.fromImages([
 
@@ -1001,8 +1001,9 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
     # Filtering out properties not in the selected variables list
     selected_properties = [properties_mapping[var] for var in selected_variables if var in properties_mapping]
 
-    data = data.toBands()
-    data = data.select(selected_properties)
+    data = data.toBands().select(selected_properties)
+    # data = data.toBands()
+    # data = data.select(selected_properties)
 
     out = ee.FeatureCollection(fcks).map(subs)
 
@@ -1011,6 +1012,8 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
     # // Dissolve by cluster and average attributes
     outProps = ee.List(out.aggregate_array('label')).distinct()
     totAreaHa = ee.Number.expression('x/y', {'x': out.geometry().area(maxError=1), 'y': 10000})
+    # outProps = out.aggregate_array('label').distinct()
+    # totAreaHa = out.geometry().area(maxError=1).divide(10000)
 
     def propfn(prop, selected_properties):
         tempFC = out.filter(ee.Filter.eq('label', prop))
@@ -1038,15 +1041,15 @@ def download_data(res, stack, bb, selected_variables, prcSum, prcNrd, Di, tmaxMa
 
     outDiss = ee.FeatureCollection(outProps.map(lambda prop: propfn(prop, selected_properties)))
 
-    def outDissfn(feature):
-        return feature.set('style', fcksStyles.get(feature.get('cluster')))
+    # def outDissfn(feature):
+    #     return feature.set('style', fcksStyles.get(feature.get('cluster')))
         
-    outDisss = ee.FeatureCollection(outDiss).map(outDissfn)
+    # outDisss = ee.FeatureCollection(outDiss).map(outDissfn)
     
-    #Style the FeatureCollection according to each feature's "style" property.
-    outDissVisCustom = outDisss.style(
-        styleProperty= 'style'
-    )
+    # #Style the FeatureCollection according to each feature's "style" property.
+    # outDissVisCustom = outDisss.style(
+    #     styleProperty= 'style'
+    # )
     return (outDiss)
 
 # .filter(ee.Filter.date(sdate, edate))

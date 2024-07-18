@@ -1,4 +1,5 @@
 import ee
+import folium
 import geojson
 import streamlit as st
 import geopandas as gpd
@@ -19,32 +20,23 @@ import random
 import pandas as pd
 from eefun import *
 
-# # # # Need to refresh token every week
-# ee.Authenticate()
-# ee.Initialize(project='midyear-button-379815')
-
-
 logo = "assets/EiA_logo.png"
 logo2 = "assets/EiA_logo2.png"
+
 # Wide app layout
 st.set_page_config(layout="wide", page_title="Sampling Framework", page_icon=logo2)
 st.header(":green[Sampling Framework]")
-#st.markdown('<h1 style="color: rgb(85,176,71);">Sampling Framework</h1>', unsafe_allow_html=True)
-        
 
-crops = ["Maize", "Potato", "Cassava","Rice", "Wheat", "Soybean", "Teff", "Sorghum" ]
+crops = ["Rice","Potato","Maize", "Cassava", "Wheat", "Soybean", "Teff", "Sorghum" ]
 varlist = ['Rainfall Total', 'Rainfall Days','Rainfall Average','Temperature Maximum',
             'Temperature Minimum','Temperature Mean','Soil Zinc', 'Elevation','Slope', 'Soil Organic Carbon','Soil pH','Soil CEC','Soil Nitrogen','Soil Clay','Soil Sand']
 cropmask = ee.Image('COPERNICUS/Landcover/100m/Proba-V-C3/Global/2019').select('discrete_classification').eq(40)
-
-
 
 Map = geemap.Map(center=[0, 0], zoom=2, Draw_export=True)
 
 # Load CSS file content
 with open('style.css', 'r') as css_file:
     css_content = css_file.read()
-
 # Apply CSS styles
 st.markdown(f'<style>{css_content}</style>', unsafe_allow_html=True)
 
@@ -71,20 +63,16 @@ with st.sidebar:
 tab1, tab2, tab3 = st.tabs([":orange[The App]", ":orange[How It Works]", ":orange[Data and Sources]"])
 
 with tab2:
-    #st.write("How It Works") 
     # Read HTML file
     with open('HowTo.html', 'r') as file:
         html_content = file.read()
-
     # Display HTML content
     st.markdown(html_content, unsafe_allow_html=True)
 
 with tab3:
-    #st.write("How It Works") 
     # Read HTML file
     with open('datasets.html', 'r') as file:
         html_content = file.read()
-
     # Display HTML content
     st.markdown(html_content, unsafe_allow_html=True)
 
@@ -125,13 +113,17 @@ with tab1:
                                 int((selected_Edate1).strftime("%-m")),
                                 int((selected_Edate1).strftime("%-d")))
     
-            #reccommended agronomic variables as per crop
+            #recommended agronomic variables as per crop -to be updated
             if selected_Crop == "Maize":
-                selected_variables=varlist[0:8]
+                selected_variables=['Rainfall Days','Temperature Maximum',
+            'Temperature Minimum', 'Elevation','Slope', 'Soil Organic Carbon','Soil pH','Soil CEC','Soil Nitrogen','Soil Clay','Soil Sand']
             elif selected_Crop == "Potato":
                 selected_variables=varlist[0:5]
-            elif selected_Crop == "Beans":
-                selected_variables=varlist[2:7]
+            elif selected_Crop == "Rice":
+                selected_variables=varlist[1:8]
+            elif selected_Crop == "Soybean":
+                selected_variables=['Rainfall Days','Temperature Maximum',
+            'Temperature Minimum', 'Soil Organic Carbon','Soil pH','Soil Nitrogen','Soil Clay','Soil Sand']
             else:
                 selected_variables=varlist[0:6]
             
@@ -166,34 +158,29 @@ with tab1:
             bb_clip = mapping(poly.geometry.unary_union)
             res = res.clip(bb_clip)   
 
-            numClusters = numClusters.getInfo()
+            # numClusters = numClusters.getInfo()
 
-            def gen_colors(num_colors):
-                random.seed(0) #ensure reproducibility
-                random_colors = []
-                for _ in range(num_colors):
-                    color = '#' + ''.join([format(random.randint(0,255),'02x')for _ in range(3)])
-                    random_colors.append(color)
-                return random_colors
-                #"#{:06x}".format(random.randint(0,0xFFFFFF))
+            # def gen_colors(num_colors):
+            #     random.seed(0) #ensure reproducibility
+            #     random_colors = []
+            #     for _ in range(num_colors):
+            #         color = '#' + ''.join([format(random.randint(0,255),'02x')for _ in range(3)])
+            #         random_colors.append(color)
+            #     return random_colors
+            #     #"#{:06x}".format(random.randint(0,0xFFFFFF))
             
-            palette = gen_colors(numClusters)
-
-            cluster_indices = list(range(numClusters))
-
-            style_res = {
-                'bands': 'cluster',
-                'min' :0,
-                'max': numClusters - 1,
-                'palette' : palette
-            }
-           
-
-            Map.addLayer (res, style_res, 'Xmeans') 
-            # Create a feature collection where each feature gets a cluster property
-            outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)
-            Map.addLayer (outDiss, {}, 'Feature Xmeans')
-           #  st.write(outDiss.getInfo())                       
+            # palette = gen_colors(numClusters)
+            # cluster_indices = list(range(numClusters))
+            # style_res = {
+            #     'bands': 'cluster',
+            #     'min' :0,
+            #     'max': numClusters - 1,
+            #     'palette' : palette
+            # }           
+            
+            Map.addLayer (res.randomVisualizer(), {}, 'Xmeans') 
+            # Create a feature collection where each feature gets a cluster id, trials,... property
+            outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)             
             Map.add_labels(
                 outDiss,
                 "cluster",
@@ -201,12 +188,23 @@ with tab1:
                 font_color="black",
                 font_family="arial",
                 font_weight="bold"
-                )
-                    # def on_hover (feature, **kwargs):
-            #     cluster=feature.get
+            )
+            # Function to add labels to features            
+            def add_labels(feature):       
+                properties = feature['properties']
+                cluster = properties['cluster']
+                trials = properties['trials']                label = f"Cluster: {cluster}    Trials:{trials}"  
+                return folium.Popup(label, parse_html=True)
 
-
-        
+            for feature in outDiss.getInfo()['features']:
+                geojson_feature = json.dumps(feature)
+                folium.GeoJson(
+                    geojson_feature,
+                    style_function=lambda x: {'fillColor': '#ffff00', 'color': '#000000', 'weight': 2},
+                    tooltip=folium.GeoJsonTooltip(fields=['cluster','trials'], labels=True),
+                    popup=add_labels(feature),
+                    name=''    #remove from layercontrol
+                    ).add_to(Map)                           
             
         except Exception as e:
             st.error(e)
@@ -217,21 +215,7 @@ with tab1:
             st.sidebar.markdown("Are you satisfied with the results? If yes, generate link below and Click 'Get Results' to download the results of unsupervised optimized clustering for use." )
             GenerateLink1 = st.sidebar.checkbox("Yes, Generate Download Link.")
 
-            if GenerateLink1:
-               #  outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srt, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmeanm)
-               
-                # def style_features(feature):
-                #     cluster_value = feature.get('cluster')
-                #     return feature.set('style',{
-                #         'color':palette[cluster_value],
-                #         'width': 2,
-                #         'fillcolor': palette[cluster_value],
-                #         'fillOpacity': 0.5,
-                #     })
-
-                # styled_outDiss = outDiss.map(style_features)
-                #Map.addLayer (styled_outDiss, {}, 'styled')           
-                
+            if GenerateLink1:                               
                 st.sidebar.write("Click below to download file")
                 current_time = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                 gcs_path = f'data_{current_time}'
@@ -273,18 +257,11 @@ with tab1:
        
         except Exception as e:
             st.error(e)
-            # st.error("An error occurred: There is an issue with your file download. Try again")              
-            
-
-        
+            # st.error("An error occurred: There is an issue with your file download. Try again") 
 
         try:
             revisionLink = st.sidebar.checkbox("No, Considering a revision of the clustering.")
-            if revisionLink:
-                # numClusters = outDiss.size()
-               # #numClusters = get_numClusters(bb,training,selected_variables,x)     
-                #st.write(numClusters.getInfo())
-               #  numClusters = numClusters.getInfo()
+            if revisionLink:                
                 cluster_options =list(range( 1, 101))
                 if numClusters in cluster_options:
                     cluster_options.remove(numClusters)
@@ -293,12 +270,12 @@ with tab1:
                 st.sidebar.write("## Considering a revision of the clustering: modify variables and/or the number of clusters ")
                 variable_modification_options = st.sidebar.checkbox("Modify Variables", key="variable_modification")
                 if variable_modification_options:
-                    selected_variables = st.sidebar.multiselect('Current Variables', varlist, default = selected_variables)
-                if not variable_modification_options:
-                    #display default variables 
-                    v = str(selected_variables)
-                    var_clean_list = ", ".join(selected_variables)
-                    st.sidebar.write("Variables: ", var_clean_list)              
+                    selected_variables = st.sidebar.multiselect(' ', varlist, default = selected_variables)
+               #  if not variable_modification_options:
+               #      #display default variables 
+               #      v = str(selected_variables)
+               #      var_clean_list = ", ".join(selected_variables)
+               #      st.sidebar.write("Variables: ", var_clean_list)              
         
                 cluster_modification_options = st.sidebar.checkbox("Modify Clusters", key="cluster_modification")        
                 if not cluster_modification_options:
@@ -309,13 +286,19 @@ with tab1:
 
             
                 if variable_modification_options or cluster_modification_options:
+                    training = get_training(bb,vectors,selected_variables,prcSum,  prcNrd, Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)
+                    x = get_x(training,selected_variables)
                     res = get_res_kmeans(training,selected_variables,cluster_selection,x)
                     res = res.clip(bb_clip)
-            
+                    
+                    Map = geemap.Map(center=[0, 0], zoom=2, Draw_export=True)
+                    Map = geemap.Map(center=centroid_coords, zoom=8)
+                    Map.add_gdf(poly,  'AOI') 
+
                     Map.addLayer (res.randomVisualizer(), {}, 'Kmeans')    
                # Create a feature collection where each feature gets a cluster property
-                    outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srt, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmeanm)
-                   #  Map.addLayer (outDiss, {}, 'Feature Kmeans')                   
+                    outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)
+                    
                     Map.add_labels(
                         outDiss,
                         "cluster",
@@ -323,9 +306,24 @@ with tab1:
                         font_color="black",
                         font_family="arial",
                         font_weight="bold"
-                     )
-
-                    
+                    )
+                    # Function to add labels to features                    
+                    def add_labels(feature):       
+                        properties = feature['properties']
+                        cluster = properties['cluster']
+                        trials = properties['trials']
+                        label = f"Cluster: {cluster}    Trials:{trials}"  
+                        return folium.Popup(label, parse_html=True)
+        
+                    for feature in outDiss.getInfo()['features']:
+                        geojson_feature = json.dumps(feature)
+                        folium.GeoJson(
+                            geojson_feature,
+                            style_function=lambda x: {'fillColor': '#ffff00', 'color': '#000000', 'weight': 2},
+                            tooltip=folium.GeoJsonTooltip(fields=['cluster','trials'], labels=True),
+                            popup=add_labels(feature),
+                            name=''    #remove from layercontrol
+                            ).add_to(Map)                            
 
                      
                     st.sidebar.write("## Download: ")
@@ -333,7 +331,6 @@ with tab1:
                     GenerateLink2 = st.sidebar.checkbox("Generate Download Link2")
                                     
                     if GenerateLink2:
-                       #  outDiss = download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srt, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmeanm)
                         st.sidebar.write("Click below to download the results of the modified clustering")
                         current_time = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                         gcs_path = f'data_{current_time}'
@@ -363,9 +360,7 @@ with tab1:
                                 with open(file_path, 'rb') as f:
                                      kml_data = f.read()
                                 return kml_data
-                            kml_data=download_file(data_path)
-
-                            
+                            kml_data=download_file(data_path)                            
                                 
                             st.sidebar.download_button(
                                 label='Get Results2',
@@ -375,11 +370,14 @@ with tab1:
                             )
         except Exception as e:
             st.error(e)
-            # st.error("An error occurred: There is an issue with your file download. Try again")   
+            # st.error("An error occurred: There is an issue with your file download. Try again")  
 
     Map.to_streamlit(height=600)
 
-# )
+
+
+
+        
 with tab1:
     if data is not None:   
         st.markdown('<h4 style="color: rgb(69,45,34);">Clusters Details</h4>', unsafe_allow_html=True)
@@ -394,10 +392,6 @@ with tab1:
             area = feature['properties']['cAreaHa']
             trial_data.append({'Cluster ID':cluster_id, 'Trials': trials, 'Area (Ha)':area})
 
-        # df_trial_data= pd.DataFrame(trial_data, index= None)
-        # df_trial_data = df_trial_data.sort_values('Cluster ID')
-        # df_trial_data = df_trial_data.iloc[:,1:4]
-            
         st.dataframe(data=trial_data, use_container_width=True)
 
 
@@ -426,8 +420,8 @@ with tab1:
        
   
         selected_variabless = [var for var in selected_variables if var in properties_mapping] 
-       #  selected_variabless = list(properties_mapping.keys())  # Example selected variables          
-   #  st.write(selected_variables) 
+       #  selected_variabless = list(properties_mapping.keys())           
+
         # Function to generate boxplot data
         def generate_boxplot(var_name):
             mapping = properties_mapping.get(var_name)
@@ -444,8 +438,6 @@ with tab1:
         num_variables = len(selected_variabless)
         num_cols = 3
         num_rows = math.ceil(num_variables / num_cols)
-       #  st.write(selected_variables)
-
          
         fig = make_subplots(rows=num_rows, cols=num_cols)         
         for i, var_name in enumerate(selected_variabless):
@@ -465,3 +457,4 @@ with tab1:
         fig.update_layout(height=1500, width=1000, title_text="Boxplots of Selected Variables", showlegend=False)
         st.plotly_chart(fig, use_container_width=True)
 
+#End
