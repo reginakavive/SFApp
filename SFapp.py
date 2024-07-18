@@ -189,11 +189,12 @@ with tab1:
                 font_family="arial",
                 font_weight="bold"
             )
-            # Function to add labels to features            
+            # Function to add labels to features                    
             def add_labels(feature):       
                 properties = feature['properties']
                 cluster = properties['cluster']
-                trials = properties['trials']                label = f"Cluster: {cluster}    Trials:{trials}"  
+                trials = properties['trials']
+                label = f"Cluster: {cluster}    Trials:{trials}"  
                 return folium.Popup(label, parse_html=True)
 
             for feature in outDiss.getInfo()['features']:
@@ -204,7 +205,8 @@ with tab1:
                     tooltip=folium.GeoJsonTooltip(fields=['cluster','trials'], labels=True),
                     popup=add_labels(feature),
                     name=''    #remove from layercontrol
-                    ).add_to(Map)                           
+                    ).add_to(Map)                            
+              
             
         except Exception as e:
             st.error(e)
