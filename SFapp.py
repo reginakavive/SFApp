@@ -374,7 +374,7 @@ with tab1:
         except Exception as e:
             st.error(e)
             # st.error("An error occurred: There is an issue with your file download. Try again")  
-    st.components.v1.html('',height=1)
+
     Map.to_streamlit(height=600)
 
 
