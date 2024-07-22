@@ -9,14 +9,14 @@ from google.cloud import storage
 import datetime
 import urllib.request
 from shapely.geometry import mapping
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from PIL import Image
+# from PIL import Image
 import math
-import io
-import re
-import random
+# import io
+# import re
+# import random
 import pandas as pd
 from eefun import *
 
@@ -179,6 +179,7 @@ with tab1:
             # }           
             
             Map.addLayer (res.randomVisualizer(), {}, 'Xmeans') 
+            
             # Create a feature collection where each feature gets a cluster id, trials,... property
             outDiss= download_data(res,stack,bb,selected_variables,prcSum, prcNrd,Di, tmaxMax ,tminMin ,tmeanMean,zinc,srtm, slp, SOCmean,pHmean,CECmean,Nmean,claymean,sandmean)             
             Map.add_labels(
@@ -373,7 +374,7 @@ with tab1:
         except Exception as e:
             st.error(e)
             # st.error("An error occurred: There is an issue with your file download. Try again")  
-
+    st.components.v1.html('',height=1)
     Map.to_streamlit(height=600)
 
 
