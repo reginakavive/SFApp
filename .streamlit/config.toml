@@ -1,2 +1,4 @@
 [theme]
 base="light"
+backgroundColor = "white"
+textColor = #ddd
