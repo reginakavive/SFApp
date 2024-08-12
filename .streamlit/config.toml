@@ -1,4 +1,5 @@
 [theme]
 base="light"
+primaryColor = "#d3d3d3"
 backgroundColor = "white"
 textColor = "black"
