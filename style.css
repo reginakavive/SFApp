@@ -1,3 +1,23 @@
+/* Theme styles 
+.st-emotion-cache-1r4qj8v {
+    position: absolute;
+    background: rgb(255, 255, 255);
+    color: #ccc;
+    inset: 0px;
+    color-scheme: light;
+    overflow: hidden;
+}
+.st-emotion-cache-13k62yr {
+    position: absolute;
+    background: rgb(255, 255, 255);
+    color: #ccc;
+    inset: 0px;
+    color-scheme: dark;
+    overflow: hidden;
+}*/
+/* background: rgb(14, 17, 23);
+    color: rgb(250, 250, 250);  */
+
 /* Header styles */
 .st-emotion-cache-1r4qj8v {
     position: absolute;
@@ -47,6 +67,26 @@
     flex-direction: row;
     -webkit-box-align: center;
     align-items: center;
+}
+
+.st-emotion-cache-12fmjuu {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    height: 3.75rem;
+    background: rgb(255, 255, 255, 0);
+    outline: none;
+    z-index: 999990;
+    display: block;
+}
+
+/* adjusted padding */
+.st-emotion-cache-1jicfl2 {
+    width: 100%;
+    padding: 1rem 1rem 10rem;
+    min-width: auto;
+    max-width: initial;
 }
 
 /* button */
