@@ -7,6 +7,16 @@
     color-scheme: dark;
     overflow: hidden;
 }
+
+.st-emotion-cache-2glhbl {
+    position: absolute;
+    background: white;
+    color: #ddd;
+    inset: 0px;
+    color-scheme: light;
+    overflow: hidden;
+}
+
 .st-emotion-cache-h4xjwg {
     position: fixed;
     top: 0px;
@@ -140,6 +150,14 @@
     min-width: auto;
     max-width: initial;
     
+}
+.st-emotion-cache-1mi2ry5 {
+    display: flex;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: start;
+    align-items: start;
+    padding: 1px;
 }
 .st-emotion-cache-12fmjuu {
     position: fixed;
