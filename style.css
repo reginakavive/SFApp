@@ -1,22 +1,86 @@
-/* Theme styles 
-.st-emotion-cache-1r4qj8v {
-    position: absolute;
-    background: rgb(255, 255, 255);
-    color: #ccc;
-    inset: 0px;
-    color-scheme: light;
-    overflow: hidden;
-}
+/* Theme details*/
 .st-emotion-cache-13k62yr {
     position: absolute;
-    background: rgb(255, 255, 255);
+    background: #fff;
     color: #ccc;
     inset: 0px;
     color-scheme: dark;
     overflow: hidden;
-}*/
-/* background: rgb(14, 17, 23);
-    color: rgb(250, 250, 250);  */
+}
+.st-emotion-cache-h4xjwg {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    height: 3.75rem;
+    background: rgb(255 255 255 / 0%);
+    outline: none;
+    z-index: 999990;
+    display: block;
+}
+
+.st-emotion-cache-1itdyc2 {
+    position: relative;
+    top: 2px;
+    background-color: rgb(0, 104, 56);
+    z-index: 999991;
+    min-width: 244px;
+    max-width: 550px;
+    transform: none;
+    transition: transform 300ms, min-width 300ms, max-width 300ms;
+}
+
+.st-emotion-cache-xwtqgq {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    color: rgb(49, 51, 63);
+}
+
+
+.st-emotion-cache-7oyrr6 {
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+.st-emotion-cache-lpgk4i {
+    display: inline-flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+    font-weight: 400;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    min-height: 2.5rem;
+    margin: 0px;
+    line-height: 1.6;
+    color: #f8f9fa;
+    width: auto;
+    user-select: none;
+    background-color: rgb(195, 82, 31);
+    border: 1px solid rgba(250, 250, 250, 0.2);
+}
+
+.st-ci {
+    background-color: #fff;
+}
+.st-c1 {
+    color: #333;
+}
+
+::-webkit-scrollbar {
+    background: #ddd;
+    border-radius: 100px;
+    height: 6px;
+    width: 10px;
+}
+
+
 
 /* Header styles */
 .st-emotion-cache-1r4qj8v {
@@ -69,6 +133,14 @@
     align-items: center;
 }
 
+/* adjusted padding */
+.st-emotion-cache-1jicfl2 {
+    width: 100%;
+    padding: 1rem 1rem 10rem;
+    min-width: auto;
+    max-width: initial;
+    
+}
 .st-emotion-cache-12fmjuu {
     position: fixed;
     top: 0px;
@@ -79,14 +151,6 @@
     outline: none;
     z-index: 999990;
     display: block;
-}
-
-/* adjusted padding */
-.st-emotion-cache-1jicfl2 {
-    width: 100%;
-    padding: 1rem 1rem 10rem;
-    min-width: auto;
-    max-width: initial;
 }
 
 /* button */
@@ -236,5 +300,7 @@ st.sidebar {
     /* Example of hiding elements not needed in print */
     .no-print {
         display: none;
+    }
+}y: none;
     }
 }
