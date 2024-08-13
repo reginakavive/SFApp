@@ -3,7 +3,7 @@ name: sfa
 services:
   sfa:
     container_name: sfa
-    image: iita/sf-app:latest
+    image: iita/sf-app:${VERSION_TAG:-latest}
     build:
       context: .
       dockerfile: Dockerfile
