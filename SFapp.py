@@ -32,7 +32,8 @@ varlist = ['Rainfall Total', 'Rainfall Days','Rainfall Average','Temperature Max
             'Temperature Minimum','Temperature Mean','Soil Zinc', 'Elevation','Slope', 'Soil Organic Carbon','Soil pH','Soil CEC','Soil Nitrogen','Soil Clay','Soil Sand']
 cropmask = ee.Image('COPERNICUS/Landcover/100m/Proba-V-C3/Global/2019').select('discrete_classification').eq(40)
 
-Map = geemap.Map(center=[0, 0], zoom=2, Draw_export=True)
+Map = geemap.Map(center=[0, 0], zoom=2,  Draw_export=True)
+Map.add_basemap("SATELLITE")
 
 # Load CSS file content
 with open('style.css', 'r') as css_file:
@@ -51,8 +52,8 @@ selected_variables = []
 with st.sidebar:    
     st.image(logo)
     # st.experimental_rerun()
-    st.write("## Upload AOI :gear:")
-    data = st.file_uploader("Upload AOI Shapefile", type=["geojson","zip"])
+    st.write("## Area of Interest (AOI)  :gear:")
+    data = st.file_uploader(" " ,type=["geojson","zip"])
        
     if data is not None:
         st.write("## Select Crop and Date: ")
@@ -101,6 +102,7 @@ with tab1:
     
             # Create map
             Map = geemap.Map(center=centroid_coords, zoom=8)
+            Map.add_basemap("SATELLITE")
             Map.add_gdf(poly,  'AOI') 
             #Map.addLayer(bb, {}, 'Bounding Box')
             selected_Sdate1 = (datetime.date.today() - datetime.timedelta(days=10*365))
@@ -158,7 +160,7 @@ with tab1:
             bb_clip = mapping(poly.geometry.unary_union)
             res = res.clip(bb_clip)   
 
-            # numClusters = numClusters.getInfo()
+            numClusters = numClusters.getInfo()
 
             # def gen_colors(num_colors):
             #     random.seed(0) #ensure reproducibility
@@ -296,6 +298,7 @@ with tab1:
                     
                     Map = geemap.Map(center=[0, 0], zoom=2, Draw_export=True)
                     Map = geemap.Map(center=centroid_coords, zoom=8)
+                    Map.add_basemap("SATELLITE")
                     Map.add_gdf(poly,  'AOI') 
 
                     Map.addLayer (res.randomVisualizer(), {}, 'Kmeans')    
@@ -374,7 +377,7 @@ with tab1:
         except Exception as e:
             st.error(e)
             # st.error("An error occurred: There is an issue with your file download. Try again")  
-
+    
     Map.to_streamlit(height=600)
 
 
@@ -407,9 +410,9 @@ with tab1:
             'Rainfall Total': {'property': 'prcSum', 'unit': 'mm'},
             'Rainfall Days': {'property': 'prcNrd', 'unit': 'days'},
             'Rainfall Average': {'property': 'Di', 'unit': 'mm/day'},
-            'Temperature Maximum': {'property': 'tmaxMax', 'unit': '°C'},
-            'Temperature Minimum': {'property': 'tminMin', 'unit': '°C'},
-            'Temperature Mean': {'property': 'tmeanMean', 'unit': '°C'},
+            'Temperature Maximum': {'property': 'tmaxMax', 'unit': 'K'},
+            'Temperature Minimum': {'property': 'tminMin', 'unit': 'K'},
+            'Temperature Mean': {'property': 'tmeanMean', 'unit': 'K'},
             'Soil Zinc': {'property': 'zinc', 'unit':' ppmg'},
             'Elevation': {'property': 'srtm', 'unit': 'm'},
             'Slope': {'property': 'slp', 'unit': '%'},

@@ -152,6 +152,17 @@
     z-index: 999990;
     display: block;
 }
+.st-emotion-cache-ato1ye {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    height: 3.75rem;
+    background: rgb(255, 255, 255, 0);
+    outline: none;
+    z-index: 999990;
+    display: block;
+}
 
 /* button */
 .st-emotion-cache-13ejsyy:hover {
